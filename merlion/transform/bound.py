@@ -25,7 +25,9 @@ class LowerUpperClip(TransformBase):
 
     def __init__(self, lower=None, upper=None):
         super().__init__()
-        assert not (lower is None and upper is None), "Must provide at least one of lower or upper"
+        assert (
+            lower is not None or upper is not None
+        ), "Must provide at least one of lower or upper"
         if lower is not None and upper is not None:
             assert lower < upper
         self.lower = lower

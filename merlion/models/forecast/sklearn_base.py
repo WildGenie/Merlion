@@ -95,7 +95,7 @@ class SKLearnForecaster(ForecasterExogBase):
 
     @property
     def _default_train_config(self):
-        return dict()
+        return {}
 
     def _set_params(self, train_data: pd.DataFrame, fit: bool = False):
         if not fit:
@@ -140,8 +140,7 @@ class SKLearnForecaster(ForecasterExogBase):
         elif self.prediction_stride == 1:
             if fit:
                 logger.info(
-                    f"Model is working on a multivariate dataset with prediction_stride = 1. "
-                    f"Model will be trained to autoregressively predict all univariates."
+                    'Model is working on a multivariate dataset with prediction_stride = 1. Model will be trained to autoregressively predict all univariates.'
                 )
             data_target_idx = None
         else:

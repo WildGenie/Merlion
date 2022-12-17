@@ -10,7 +10,7 @@ import logging
 class DashLogger(logging.StreamHandler):
     def __init__(self, stream=None):
         super().__init__(stream=stream)
-        self.logs = list()
+        self.logs = []
 
     def emit(self, record):
         try:

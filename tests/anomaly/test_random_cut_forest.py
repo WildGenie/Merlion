@@ -63,8 +63,8 @@ class TestRandomCutForest(unittest.TestCase):
         scores = self.model.get_anomaly_score(self.vals_train[-20:] + self.vals_test)
         logger.info(f"Scores look like:\n{scores[:5]}")
         scores = scores.to_pd().values.flatten()
-        logger.info("max score = " + str(max(scores)))
-        logger.info("min score = " + str(min(scores)) + "\n")
+        logger.info(f"max score = {str(max(scores))}")
+        logger.info(f"min score = {str(min(scores))}" + "\n")
 
     def test_alarm(self):
         self.run_init()

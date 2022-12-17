@@ -37,7 +37,13 @@ class TransformSequence(InvertibleTransformBase):
 
     def _extract_nontrivial_transforms(self, transform: TransformBase) -> List[TransformBase]:
         if isinstance(transform, type(self)):
-            transforms = sum([self._extract_nontrivial_transforms(t) for t in transform.transforms], [])
+            transforms = sum(
+                (
+                    self._extract_nontrivial_transforms(t)
+                    for t in transform.transforms
+                ),
+                [],
+            )
         else:
             transforms = [transform]
         return [t for t in transforms if not isinstance(t, Identity)]

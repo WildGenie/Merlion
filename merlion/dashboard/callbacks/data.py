@@ -28,9 +28,7 @@ class DefaultEncoder(json.JSONEncoder):
             return int(obj)
         if isinstance(obj, np.floating):
             return float(obj)
-        if isinstance(obj, np.ndarray):
-            return obj.tolist()
-        return super().default(obj)
+        return obj.tolist() if isinstance(obj, np.ndarray) else super().default(obj)
 
 
 @callback(
@@ -43,10 +41,8 @@ def upload_file(filenames, contents):
     if filenames is not None and contents is not None:
         for name, data in zip(filenames, contents):
             file_manager.save_file(name, data)
-    options = []
     files = file_manager.uploaded_files()
-    for filename in files:
-        options.append({"label": filename, "value": filename})
+    options = [{"label": filename, "value": filename} for filename in files]
     return options, name
 
 
@@ -89,8 +85,7 @@ def click_run(btn_click, modal_close, filename, data):
             error = traceback.format_exc()
             modal_is_open = True
             modal_content = error
-            logger.error(error)
-
+            logger.modal_content(modal_content)
     return stats_table, json.dumps(stats, cls=DefaultEncoder), data_table, data_figure, modal_is_open, modal_content
 
 
@@ -155,6 +150,5 @@ def click_run(btn_click, modal_close, model):
             error = traceback.format_exc()
             modal_is_open = True
             modal_content = error
-            logger.error(error)
-
+            logger.modal_content(modal_content)
     return data, modal_is_open, modal_content

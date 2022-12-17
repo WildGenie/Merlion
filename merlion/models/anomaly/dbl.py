@@ -356,10 +356,12 @@ class Segmenter:
         self.segments = {k: Segment(k) for k in product(days, weekdays, windows)}
 
     def window_key(self, t: pd.Timestamp):
-        if not self.has_daily:
-            return None
-        day_elapsed_delta = t.hour * self.hour_delta + t.minute * self.min_delta
-        return day_elapsed_delta // self.wind_delta
+        return (
+            (t.hour * self.hour_delta + t.minute * self.min_delta)
+            // self.wind_delta
+            if self.has_daily
+            else None
+        )
 
     def weekday_key(self, t: pd.Timestamp):
         return t.dayofweek if self.has_weekly else None

@@ -22,7 +22,7 @@ class PostRuleSequence(PostRuleBase):
     def train(self, anomaly_scores: TimeSeries, **kwargs) -> TimeSeries:
         for post_rule in self.post_rules:
             params = inspect.signature(post_rule.train).parameters
-            if not any(v.kind.name == "VAR_KEYWORD" for v in params.values()):
+            if all(v.kind.name != "VAR_KEYWORD" for v in params.values()):
                 local_kwargs = {k: v for k, v in kwargs.items() if k in params}
             anomaly_scores = post_rule.train(anomaly_scores, **local_kwargs)
         return anomaly_scores

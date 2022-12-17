@@ -43,7 +43,4 @@ class DataAnalyzer(DataMixin):
 
     @staticmethod
     def get_data_figure(df):
-        if df is None:
-            return create_empty_figure()
-        else:
-            return plot_timeseries(df)
+        return create_empty_figure() if df is None else plot_timeseries(df)

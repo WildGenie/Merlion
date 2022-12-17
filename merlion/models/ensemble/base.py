@@ -207,7 +207,9 @@ class EnsembleBase(ModelBase, metaclass=AutodocABCMeta):
             else:
                 for i, (model, model_state) in enumerate(zip(self.models, model_states)):
                     if model is None and model_state is not None:
-                        raise ValueError(f"One of the Ensemble models is None, but received a non-None model state.")
+                        raise ValueError(
+                            "One of the Ensemble models is None, but received a non-None model state."
+                        )
                     elif model is None or model_state is None:
                         self.models[i] = None
                     else:

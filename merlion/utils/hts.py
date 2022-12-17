@@ -83,9 +83,9 @@ def minT_reconciliation(
         Ph.append(P)
 
     # Compute reconciled forecasts
-    reconciled = []
-    for (t, yhat_h), P in zip(forecasts, Ph):
-        reconciled.append(sum_matrix @ (P @ yhat_h))
+    reconciled = [
+        sum_matrix @ (P @ yhat_h) for (t, yhat_h), P in zip(forecasts, Ph)
+    ]
     reconciled = pd.DataFrame(np.asarray(reconciled), index=to_pd_datetime(t_ref))
 
     return [u.to_ts(name=name) for u, name in zip(TimeSeries.from_pd(reconciled).univariates, names)]

@@ -71,7 +71,7 @@ class RollingWindowDataset:
                 if isinstance(exog_data, TimeSeries):
                     exog_data = exog_data.align(reference=data.index).to_pd()
                 assert isinstance(exog_data.index, pd.DatetimeIndex) and list(exog_data.index) == list(data.index)
-            assert ts_index is False, "Only TimeSeries data support ts_index = True "
+            assert not ts_index, "Only TimeSeries data support ts_index = True "
             self.dim = data.shape[1]
 
         if ts_index and batch_size != 1:
@@ -83,14 +83,13 @@ class RollingWindowDataset:
         self.flatten = flatten
 
         self.target_seq_index = target_seq_index
-        if target_seq_index is None:
-            if n_future not in [0, 1]:
-                logger.warning(
-                    "Since target_seq_index is None, we predict all univariates for this dataset. Currently, this is "
-                    "only valid with 1-step lookahead (autoregressive forecasting) or 0-step lookahead (autoencoding). "
-                    "Setting n_future = 1. If you are not expecting this behavior, set target_seq_index appropriately."
-                )
-                n_future = 1
+        if target_seq_index is None and n_future not in [0, 1]:
+            logger.warning(
+                "Since target_seq_index is None, we predict all univariates for this dataset. Currently, this is "
+                "only valid with 1-step lookahead (autoregressive forecasting) or 0-step lookahead (autoencoding). "
+                "Setting n_future = 1. If you are not expecting this behavior, set target_seq_index appropriately."
+            )
+            n_future = 1
         self.n_future = n_future
 
         self.ts_index = ts_index

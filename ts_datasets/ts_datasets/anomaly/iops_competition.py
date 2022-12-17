@@ -45,16 +45,15 @@ class IOpsCompetition(TSADBaseDataset):
         test = os.path.join(rootdir, "phase2_test.csv")
         if not os.path.isfile(train) or not os.path.isfile(test):
             z = os.path.join(rootdir, "phase2.zip")
-            if os.path.isfile(z):
-                with zipfile.ZipFile(z, "r") as zip_ref:
-                    zip_ref.extractall(rootdir)
-            else:
+            if not os.path.isfile(z):
                 raise FileNotFoundError(
                     f"Directory {rootdir} contains neither the extracted files "
                     f"phase2_train.csv and phase2_ground_truth.hdf, nor the "
                     f"compressed archive phase2.zip"
                 )
 
+            with zipfile.ZipFile(z, "r") as zip_ref:
+                zip_ref.extractall(rootdir)
         # Read the extracted CSVs to pandas dataframes
         train_df, test_df = pd.read_csv(train), pd.read_csv(test)
 

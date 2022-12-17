@@ -246,12 +246,12 @@ class BOCPD(ForecastingDetectorBase):
         self.pw_model = [(t0, model) for t0, model in self.pw_model if t0 < changepoints.index[0]]
 
         # Update the final piece of the existing model (if there is one)
-        t0 = changepoints.index[0] if len(self.pw_model) == 0 else self.pw_model[-1][0]
+        t0 = self.pw_model[-1][0] if self.pw_model else changepoints.index[0]
         tf = changepoints.index[-1] if len(cp_times) == 0 else cp_times[0]
         train_data = self.transform(self.train_data)
         data = train_data.window(t0, tf, include_tf=len(cp_times) == 0)
         if len(data) > 0:
-            if len(self.pw_model) == 0:
+            if not self.pw_model:
                 self.pw_model.append((t0, self.change_kind.value(data)))
             else:
                 self.pw_model[-1] = (t0, self.change_kind.value(data))
@@ -387,15 +387,13 @@ class BOCPD(ForecastingDetectorBase):
 
             # Re-normalize all remaining probabilities to sum to 1
             self.posterior_beam = [post for post in self.posterior_beam if post.run_length not in to_remove]
-            if len(to_remove) > 0:
+            if to_remove:
                 excess_p = np.exp(logsumexp(list(to_remove.values())))  # log P[to_remove]
                 for post in self.posterior_beam:
                     post.logp -= np.log1p(-excess_p)
                     run_length_dist[post.run_length] -= np.log1p(-excess_p)
 
-            # Update the full posterior distribution of run-length at each time, up to the desired lag
-            run_length_dist = [(r, logp) for r, logp in run_length_dist.items()]
-            if len(run_length_dist) > 0:
+            if run_length_dist := list(run_length_dist.items()):
                 all_r, all_logp_r = zip(*run_length_dist)
                 self.full_run_length_posterior[n_seen + i, all_r] = np.exp(all_logp_r)
 
@@ -404,10 +402,7 @@ class BOCPD(ForecastingDetectorBase):
 
         # Update the predictive model if there is any new data
         if len(time_series) > 0:
-            if self.lag is None:
-                n = len(self.train_timestamps)
-            else:
-                n = T + self.lag
+            n = len(self.train_timestamps) if self.lag is None else T + self.lag
             self._update_model(self.train_timestamps[-n:])
 
         # Return the anomaly scores

@@ -7,6 +7,7 @@
 """
 The autoencoder-based anomaly detector for multivariate time series
 """
+
 try:
     import torch
     import torch.nn as nn
@@ -16,7 +17,7 @@ except ImportError as e:
         "Try installing Merlion with optional dependencies using `pip install salesforce-merlion[deep-learning]` or "
         "`pip install `salesforce-merlion[all]`"
     )
-    raise ImportError(str(e) + ". " + err)
+    raise ImportError(f"{str(e)}. {err}")
 
 from typing import Sequence
 
@@ -96,8 +97,11 @@ class AutoEncoder(DetectorBase):
         self.data_dim = None
 
     def _build_model(self, dim):
-        model = AEModule(input_size=dim * self.k, hidden_size=self.hidden_size, layer_sizes=self.layer_sizes)
-        return model
+        return AEModule(
+            input_size=dim * self.k,
+            hidden_size=self.hidden_size,
+            layer_sizes=self.layer_sizes,
+        )
 
     def _train(self, train_data: pd.DataFrame, train_config=None):
         self.model = self._build_model(train_data.shape[1]).to(self.device)
@@ -118,7 +122,7 @@ class AutoEncoder(DetectorBase):
         self.model.train()
         for epoch in range(self.num_epochs):
             total_loss = 0
-            for i, (batch, _, _, _) in enumerate(loader):
+            for batch, _, _, _ in loader:
                 batch = torch.tensor(batch, dtype=torch.float, device=self.device)
                 loss = self.model.loss(batch)
                 optimizer.zero_grad()
@@ -192,8 +196,7 @@ class AEModule(nn.Module):
     def loss(self, x):
         x = torch.flatten(x, start_dim=1)
         y = self.decoder(self.encoder(x))
-        loss = self.loss_func(y, x)
-        return loss
+        return self.loss_func(y, x)
 
 
 class MLP(nn.Module):

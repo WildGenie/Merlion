@@ -33,7 +33,7 @@ class TestEvaluateForecast(unittest.TestCase):
         logger.info("test_single_model\n" + "-" * 80 + "\n")
 
         # Create a piecewise linear time series
-        values = [i for i in range(60)]
+        values = list(range(60))
         values += [values[-1] + 2 * (i + 1) for i in range(30)]
         values += [values[-1] + 3 * (i + 1) for i in range(30)]
         values += [values[-1] + 1 * (i + 1) for i in range(30)]

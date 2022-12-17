@@ -102,8 +102,7 @@ class SpectralResidual(DetectorBase):
         avg_log_amps = np.convolve(log_amps, self.q_conv_map, mode="same")  # approximation
         residuals = log_amps - avg_log_amps
 
-        saliency_map = np.abs(np.fft.ifft(np.exp(residuals + 1j * phases)))
-        return saliency_map
+        return np.abs(np.fft.ifft(np.exp(residuals + 1j * phases)))
 
     def _compute_grad(self, values: np.array) -> int:
         m = min(self.config.predicting_points, values.shape[0] - 1)

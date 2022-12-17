@@ -95,9 +95,8 @@ class ModelFactory:
     def load(cls, name, model_path, **kwargs) -> ModelBase:
         if model_path is None:
             return cls.create(name, **kwargs)
-        else:
-            model_class = cls.get_model_class(name)
-            return model_class.load(model_path, **kwargs)
+        model_class = cls.get_model_class(name)
+        return model_class.load(model_path, **kwargs)
 
     @classmethod
     def load_bytes(cls, obj, **kwargs) -> ModelBase:

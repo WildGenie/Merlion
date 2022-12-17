@@ -13,4 +13,4 @@ except ImportError as e:
         "Try installing Merlion with optional dependencies using `pip install salesforce-merlion[dashboard]` or "
         "`pip install `salesforce-merlion[all]`"
     )
-    raise ImportError(str(e) + ". " + err)
+    raise ImportError(f"{str(e)}. {err}")

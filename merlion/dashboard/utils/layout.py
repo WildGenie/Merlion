@@ -55,8 +55,14 @@ def create_layout() -> html.Div:
     )
     values.append("forecasting")
 
-    layout = html.Div(
+    return html.Div(
         id="app-content",
-        children=[dcc.Tabs(id="tabs", value=values[0] if values else "none", children=children), html.Div(id="plots")],
+        children=[
+            dcc.Tabs(
+                id="tabs",
+                value=values[0] if values else "none",
+                children=children,
+            ),
+            html.Div(id="plots"),
+        ],
     )
-    return layout

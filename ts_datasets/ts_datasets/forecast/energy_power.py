@@ -40,12 +40,12 @@ class EnergyPower(BaseDataset):
         dsetdirs = [rootdir]
         extension = "csv.gz"
 
-        fnames = sum([sorted(glob.glob(f"{d}/*.{extension}")) for d in dsetdirs], [])
+        fnames = sum((sorted(glob.glob(f"{d}/*.{extension}")) for d in dsetdirs), [])
         assert len(fnames) == 1, f"rootdir {rootdir} does not contain dataset file."
 
         start_timestamp = "2014-01-01 00:00:00"
 
-        for i, fn in enumerate(sorted(fnames)):
+        for fn in sorted(fnames):
             df = pd.read_csv(fn, index_col="Datetime", parse_dates=True)
             df = df[df.index >= start_timestamp]
             df.drop(["NI", "PJM_Load"], axis=1, inplace=True)

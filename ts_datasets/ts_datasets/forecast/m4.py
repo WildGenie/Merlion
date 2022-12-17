@@ -86,10 +86,7 @@ class M4(BaseDataset):
 
 def download(datapath, url, name, split=None):
     os.makedirs(datapath, exist_ok=True)
-    if split is not None:
-        namesplit = split + "/" + name
-    else:
-        namesplit = name
+    namesplit = split + "/" + name if split is not None else name
     url = url.format(namesplit)
     file_path = os.path.join(datapath, name) + ".csv"
     if os.path.isfile(file_path):

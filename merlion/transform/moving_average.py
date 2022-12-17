@@ -96,7 +96,7 @@ class MovingPercentile(TransformBase):
         super().__init__()
         assert 0 <= q <= 100
         assert 1 <= n_steps
-        self.n_steps = int(n_steps)
+        self.n_steps = n_steps
         self.q = q
 
     def train(self, time_series: TimeSeries):

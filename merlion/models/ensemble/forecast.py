@@ -45,8 +45,11 @@ class ForecasterEnsembleConfig(ForecasterExogConfig, EnsembleConfig):
         if self.models is not None:
             # Get the target_seq_index from the models if None is given
             if target_seq_index is None:
-                non_none_idxs = [m.target_seq_index for m in self.models if m.target_seq_index is not None]
-                if len(non_none_idxs) > 0:
+                if non_none_idxs := [
+                    m.target_seq_index
+                    for m in self.models
+                    if m.target_seq_index is not None
+                ]:
                     target_seq_index = non_none_idxs[0]
                 assert all(m.target_seq_index in [None, target_seq_index] for m in self.models), (
                     f"Attempted to infer target_seq_index from the individual models in the ensemble, but "

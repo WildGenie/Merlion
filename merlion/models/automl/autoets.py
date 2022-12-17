@@ -99,11 +99,10 @@ class AutoETS(ICAutoMLForecaster, SeasonalityLayer):
         if self.config.auto_seasonality:
             candidate_m = SeasonalityLayer.generate_theta(self, train_data=train_data)
             m, _, _ = SeasonalityLayer.evaluate_theta(self, thetas=candidate_m, train_data=train_data)
+        elif self.model.config.seasonal_periods is None:
+            m = 1
         else:
-            if self.model.config.seasonal_periods is None:
-                m = 1
-            else:
-                m = max(1, self.model.config.seasonal_periods)
+            m = max(1, self.model.config.seasonal_periods)
 
         # set the parameters ranges for error, trend, damped_trend and seasonal
         if np.any(y <= 0):
@@ -123,17 +122,17 @@ class AutoETS(ICAutoMLForecaster, SeasonalityLayer):
             S_range = ["add"]
         else:
             S_range = ["add", "mul"]
-        D_range = [True, False]
-
         if not self.config.auto_error:
             E_range = [self.model.config.error]
         if not self.config.auto_trend:
             T_range = [self.model.config.trend]
         if not self.config.auto_seasonal:
             S_range = [self.model.config.seasonal]
-        if not self.config.auto_damped:
-            D_range = [self.model.config.damped_trend]
-
+        D_range = (
+            [True, False]
+            if self.config.auto_damped
+            else [self.model.config.damped_trend]
+        )
         # Construct a grid search object
         param_values = OrderedDict(error=E_range, trend=T_range, seasonal=S_range, damped=D_range, m=[m])
         restrictions = [dict(trend=None, damped=True)]

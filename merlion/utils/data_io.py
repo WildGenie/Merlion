@@ -41,8 +41,8 @@ def df_to_time_series(
 
     # Get only the desired columns from the dataframe
     if data_cols is not None:
-        data_cols = [data_cols] if not isinstance(data_cols, (list, tuple)) else data_cols
-        if not all(c in df.columns for c in data_cols):
+        data_cols = data_cols if isinstance(data_cols, (list, tuple)) else [data_cols]
+        if any(c not in df.columns for c in data_cols):
             raise KeyError(f"Expected each of `data_cols` to be in {df.colums}. Got {data_cols}.")
         df = df[data_cols]
 
@@ -64,10 +64,12 @@ def data_io_decorator(func):
 
     # Combine the prefixes. Base prefix starts after the first line break.
     i_lb = [i for i, line in enumerate(base_prefix) if line == ""][1]
-    prefix = ("\n".join(prefix) if any([line != "" for line in prefix]) else "") + "\n".join(base_prefix[i_lb:])
+    prefix = (
+        "\n".join(prefix) if any(line != "" for line in prefix) else ""
+    ) + "\n".join(base_prefix[i_lb:])
 
     # The base docstring has no suffix, so just use the function's
-    suffix = "\n".join(suffix) if any([line != "" for line in suffix]) else ""
+    suffix = "\n".join(suffix) if any(line != "" for line in suffix) else ""
 
     # Combine the parameter lists
     for param, docstring_lines in base_params.items():

@@ -75,7 +75,7 @@ class TestAnomalize(unittest.TestCase):
         for anomaly in (Shock(anom_prob=0.0), TrendChange(anom_prob=0.0)):
             anom_ts = anomaly(self.ts)
             self.assertEqual(self.ts.univariates["metric"], anom_ts.univariates["metric"])
-            self.assertTrue(all(0.0 == anom_ts.univariates["anomaly"].np_values))
+            self.assertTrue(all(anom_ts.univariates["anomaly"].np_values == 0.0))
 
 
 if __name__ == "__main__":

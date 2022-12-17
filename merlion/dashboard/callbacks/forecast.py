@@ -38,8 +38,7 @@ def update_select_file_dropdown(n_clicks, filename, target, features, exog):
         prop_ids = {p["prop_id"].split(".")[0]: p["value"] for p in ctx.triggered}
         if "forecasting-select-file-parent" in prop_ids:
             files = file_manager.uploaded_files()
-            for f in files:
-                options.append({"label": f, "value": f})
+            options.extend({"label": f, "value": f} for f in files)
         if "forecasting-select-file" in prop_ids:
             target, features, exog = None, None, None
     return options, target, features, exog
@@ -52,8 +51,7 @@ def update_select_test_file_dropdown(n_clicks):
     prop_id = ctx.triggered_id
     if prop_id == "forecasting-select-test-file-parent":
         files = file_manager.uploaded_files()
-        for filename in files:
-            options.append({"label": filename, "value": filename})
+        options.extend({"label": filename, "value": filename} for filename in files)
     return options
 
 
@@ -70,12 +68,11 @@ def select_target(n_clicks, filename, feat_names, exog_names):
     options = []
     ctx = dash.callback_context
     prop_id = ctx.triggered_id
-    if prop_id == "forecasting-select-target-parent":
-        if filename is not None:
-            file_path = os.path.join(file_manager.data_directory, filename)
-            df = ForecastModel().load_data(file_path, nrows=2)
-            forbidden = (feat_names or []) + (exog_names or [])
-            options += [{"label": s, "value": s} for s in df.columns if s not in forbidden]
+    if prop_id == "forecasting-select-target-parent" and filename is not None:
+        file_path = os.path.join(file_manager.data_directory, filename)
+        df = ForecastModel().load_data(file_path, nrows=2)
+        forbidden = (feat_names or []) + (exog_names or [])
+        options += [{"label": s, "value": s} for s in df.columns if s not in forbidden]
     return options
 
 
@@ -92,11 +89,14 @@ def select_features(n_clicks, filename, target_name, exog_names):
     options = []
     ctx = dash.callback_context
     prop_id = ctx.triggered_id
-    if prop_id == "forecasting-select-features-parent":
-        if filename is not None and target_name is not None:
-            file_path = os.path.join(file_manager.data_directory, filename)
-            df = ForecastModel().load_data(file_path, nrows=2)
-            options += [{"label": s, "value": s} for s in df.columns if s not in [target_name] + (exog_names or [])]
+    if (
+        prop_id == "forecasting-select-features-parent"
+        and filename is not None
+        and target_name is not None
+    ):
+        file_path = os.path.join(file_manager.data_directory, filename)
+        df = ForecastModel().load_data(file_path, nrows=2)
+        options += [{"label": s, "value": s} for s in df.columns if s not in [target_name] + (exog_names or [])]
     return options
 
 
@@ -113,11 +113,14 @@ def select_exog(n_clicks, filename, target_name, feat_names):
     options = []
     ctx = dash.callback_context
     prop_id = ctx.triggered_id
-    if prop_id == "forecasting-select-exog-parent":
-        if filename is not None and target_name is not None:
-            file_path = os.path.join(file_manager.data_directory, filename)
-            df = ForecastModel().load_data(file_path, nrows=2)
-            options += [{"label": s, "value": s} for s in df.columns if s not in [target_name] + (feat_names or [])]
+    if (
+        prop_id == "forecasting-select-exog-parent"
+        and filename is not None
+        and target_name is not None
+    ):
+        file_path = os.path.join(file_manager.data_directory, filename)
+        df = ForecastModel().load_data(file_path, nrows=2)
+        options += [{"label": s, "value": s} for s in df.columns if s not in [target_name] + (feat_names or [])]
     return options
 
 
@@ -236,8 +239,7 @@ def click_train_test(
         error = traceback.format_exc()
         modal_is_open = True
         modal_content = error
-        logger.error(error)
-
+        logger.modal_content(modal_content)
     return train_metric_table, test_metric_table, figure, modal_is_open, modal_content
 
 
@@ -247,7 +249,4 @@ def click_train_test(
     Input("forecasting-file-radio", "value"),
 )
 def set_file_mode(value):
-    if value == "single":
-        return True, False
-    else:
-        return False, True
+    return (True, False) if value == "single" else (False, True)

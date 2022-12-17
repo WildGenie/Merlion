@@ -89,11 +89,9 @@ class AnomScoreCalibrator(PostRuleBase):
             targets.append(ub)
             inputs.append(x.max())
             targets.append(ub + 1)
-            inputs.append(min(self.max_score, 2 * x_max))
         else:
             targets.append(5)
-            inputs.append(min(self.max_score, 2 * x_max))
-
+        inputs.append(min(self.max_score, 2 * x_max))
         targets = np.asarray(targets)
         inputs = np.asarray(inputs)
         valid = np.concatenate(([True], np.abs(inputs[1:] - inputs[:-1]) > 1e-8))

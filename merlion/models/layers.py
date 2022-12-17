@@ -68,7 +68,7 @@ class LayeredModelConfig(Config):
                 }
             )
             model, extra_kwargs = ModelFactory.create(**{**model, **model_kwargs, "return_unused_kwargs": True})
-            kwargs.update(extra_kwargs)
+            kwargs |= extra_kwargs
         self.model = model
         self.model_kwargs = {}
         super().__init__(**kwargs)
@@ -224,15 +224,14 @@ class LayeredModel(ModelBase, metaclass=AutodocABCMeta):
                 f"Expected at least one of `config` or `model` when creating {cls.__name__}. Received neither."
             )
         elif config is not None and model is not None:
-            if config.model is None:
-                if isinstance(model, dict):
-                    model = ModelFactory.create(**model)
-                config = copy.copy(config)
-                config.model = model
-            else:
+            if config.model is not None:
                 raise RuntimeError(
                     f"Expected at most one of `config.model` or `model` when creating {cls.__name__}. Received both."
                 )
+            if isinstance(model, dict):
+                model = ModelFactory.create(**model)
+            config = copy.copy(config)
+            config.model = model
         elif config is None:
             config = cls.config_class(model=model, **kwargs)
         return config
@@ -312,9 +311,7 @@ class LayeredModel(ModelBase, metaclass=AutodocABCMeta):
         """
         base_model = self.base_model
         attr = getattr(base_model, item, None)
-        if callable(attr):
-            return attr
-        return self.__getattribute__(item)
+        return attr if callable(attr) else self.__getattribute__(item)
 
     def _train(self, train_data: pd.DataFrame, train_config=None, **kwargs):
         """

@@ -29,7 +29,7 @@ def _run_job(spark, name: str, data_cols: list, model: dict, robust: bool = Fals
         time_col=time_col,
         data_cols=data_cols,
     )
-    index_cols = index_cols + [TSID_COL_NAME]
+    index_cols += [TSID_COL_NAME]
 
     index_fields = [df.schema[c] for c in index_cols]
     pred_fields = [StructField(time_col, DateType()), StructField("anom_score", FloatType())]

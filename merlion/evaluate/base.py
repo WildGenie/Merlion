@@ -71,9 +71,7 @@ class EvaluatorConfig(metaclass=AutodocABCMeta):
         :return: the cadence at which we are having our model produce new predictions. Defaults to the retraining
             frequency if not explicitly provided.
         """
-        if self._cadence is None:
-            return self.retrain_freq
-        return self._cadence
+        return self.retrain_freq if self._cadence is None else self._cadence
 
     @cadence.setter
     def cadence(self, cadence):

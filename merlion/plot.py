@@ -89,7 +89,9 @@ class Figure:
         :param yhat_prev_ub: upper bound on ``yhat_prev`` (if model supports uncertainty estimation)
         :param yhat_color: the color in which to plot the forecast
         """
-        assert not (anom is not None and y is None), "If `anom` is given, `y` must also be given"
+        assert (
+            anom is None or y is not None
+        ), "If `anom` is given, `y` must also be given"
 
         if yhat is None:
             assert yhat_lb is None and yhat_ub is None, "Can only give `yhat_lb` and `yhat_ub` if `yhat` is given"
@@ -147,9 +149,7 @@ class Figure:
         """
         if self.y_prev is not None:
             return self.y_prev.index[-1]
-        if self.yhat_prev is not None:
-            return self.yhat_prev.index[-1]
-        return None
+        return self.yhat_prev.index[-1] if self.yhat_prev is not None else None
 
     def get_y(self):
         """Get all y's (actual values)"""
@@ -262,7 +262,7 @@ class Figure:
         ax.grid(True, which="major", c="gray", ls="-", lw=1, alpha=0.2)
         ax.set_xlabel("Time")
         ax.set_ylabel(metric_name)
-        ax.set_title(title if title else metric_name)
+        ax.set_title(title or metric_name)
         fig.legend(lines, [l.get_label() for l in lines])
         fig.tight_layout()
         return fig, ax
@@ -284,9 +284,7 @@ class Figure:
         full_label_alias = copy(self._default_label_alias)
         full_label_alias.update(label_alias)
 
-        error_color = "rgba" + str(tuple(int(x * 255) for x in to_rgb(self.yhat_color)) + (0.2,))
-        actual_color = "black"
-        anom_color = "red"
+        error_color = f"rgba{str(tuple(int(x * 255) for x in to_rgb(self.yhat_color)) + (0.2, ))}"
         line_width = 2
 
         traces = []
@@ -338,6 +336,7 @@ class Figure:
             )
 
         if y is not None:
+            actual_color = "black"
             traces.append(
                 go.Scatter(
                     name=y.name, x=y.index, y=y.values, mode="lines", line=dict(color=actual_color, width=line_width)
@@ -347,6 +346,7 @@ class Figure:
         anom_trace = None
         if self.anom is not None:
             anom_label = full_label_alias.get("anom")
+            anom_color = "red"
             anom_trace = go.Scatter(
                 name=anom_label,
                 x=self.anom.index,
@@ -364,20 +364,24 @@ class Figure:
                 title="Time",
                 type="date",
                 rangeselector=dict(
-                    buttons=list(
-                        [
-                            dict(count=7, label="1w", step="day", stepmode="backward"),
-                            dict(count=1, label="1m", step="month", stepmode="backward"),
-                            dict(count=6, label="6m", step="month", stepmode="backward"),
-                            dict(count=1, label="1y", step="year", stepmode="backward"),
-                            dict(step="all"),
-                        ]
-                    )
+                    buttons=[
+                        dict(count=7, label="1w", step="day", stepmode="backward"),
+                        dict(
+                            count=1, label="1m", step="month", stepmode="backward"
+                        ),
+                        dict(
+                            count=6, label="6m", step="month", stepmode="backward"
+                        ),
+                        dict(
+                            count=1, label="1y", step="year", stepmode="backward"
+                        ),
+                        dict(step="all"),
+                    ]
                 ),
                 rangeslider=dict(visible=True),
             ),
         )
-        title = title if title else metric_name
+        title = title or metric_name
         if title is not None:
             layout["title"] = title
         fig = make_subplots(
@@ -491,20 +495,24 @@ class MTSFigure:
                 title="Time",
                 type="date",
                 rangeselector=dict(
-                    buttons=list(
-                        [
-                            dict(count=7, label="1w", step="day", stepmode="backward"),
-                            dict(count=1, label="1m", step="month", stepmode="backward"),
-                            dict(count=6, label="6m", step="month", stepmode="backward"),
-                            dict(count=1, label="1y", step="year", stepmode="backward"),
-                            dict(step="all"),
-                        ]
-                    )
+                    buttons=[
+                        dict(count=7, label="1w", step="day", stepmode="backward"),
+                        dict(
+                            count=1, label="1m", step="month", stepmode="backward"
+                        ),
+                        dict(
+                            count=6, label="6m", step="month", stepmode="backward"
+                        ),
+                        dict(
+                            count=1, label="1y", step="year", stepmode="backward"
+                        ),
+                        dict(step="all"),
+                    ]
                 ),
                 rangeslider=dict(visible=True),
             ),
         )
-        layout["title"] = title if title else "Untitled"
+        layout["title"] = title or "Untitled"
         if figsize is not None:
             assert len(figsize) == 2, "figsize should be (width, height)."
             layout["width"] = figsize[0]
@@ -518,8 +526,7 @@ class MTSFigure:
         :param figsize: figure size in pixels
         :return: plotly figure.
         """
-        anom_color = "red"
-        error_color = "rgba" + str(tuple(int(x * 255) for x in to_rgb(self.yhat_color)) + (0.2,))
+        error_color = f"rgba{str(tuple(int(x * 255) for x in to_rgb(self.yhat_color)) + (0.2, ))}"
 
         traces = []
         y = self.get_y()
@@ -571,6 +578,7 @@ class MTSFigure:
         anom_trace = None
         if self.anom is not None:
             v = self.anom.univariates[self.anom.names[0]]
+            anom_color = "red"
             anom_trace = go.Scatter(
                 name="Anomaly Score", x=v.index, y=v.np_values, mode="lines", line=dict(color=anom_color)
             )

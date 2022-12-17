@@ -42,14 +42,14 @@ class MSESDetector(ForecastingDetectorBase, MSES):
     def get_anomaly_score(
         self, time_series: TimeSeries, time_series_prev: TimeSeries = None, exog_data=None
     ) -> TimeSeries:
-        if self.online_updates:
-            time_series, time_series_prev = self.transform_time_series(time_series, time_series_prev)
-            if time_series_prev is None:
-                full_ts = time_series
-            else:
-                full_ts = time_series_prev + time_series
-            forecast, err = self.update(full_ts.to_pd(), train_cadence=pd.to_timedelta(0))
-            forecast, err = [x.bisect(time_series.t0, t_in_left=False)[1] for x in [forecast, err]]
-            return TimeSeries.from_pd(self.forecast_to_anom_score(time_series, forecast, err))
-        else:
+        if not self.online_updates:
             return super().get_anomaly_score(time_series, time_series_prev)
+        time_series, time_series_prev = self.transform_time_series(time_series, time_series_prev)
+        full_ts = (
+            time_series
+            if time_series_prev is None
+            else time_series_prev + time_series
+        )
+        forecast, err = self.update(full_ts.to_pd(), train_cadence=pd.to_timedelta(0))
+        forecast, err = [x.bisect(time_series.t0, t_in_left=False)[1] for x in [forecast, err]]
+        return TimeSeries.from_pd(self.forecast_to_anom_score(time_series, forecast, err))

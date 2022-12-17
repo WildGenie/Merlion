@@ -49,8 +49,8 @@ class TestZMS(unittest.TestCase):
         scores = self.model.get_anomaly_score(self.vals_test)
         logger.info(f"Scores look like: {scores[:5]}")
         scores = scores.to_pd().values
-        logger.info("max score = " + str(scores.max()))
-        logger.info("min score = " + str(scores.min()) + "\n")
+        logger.info(f"max score = {str(scores.max())}")
+        logger.info(f"min score = {str(scores.min())}" + "\n")
         self.assertEqual(len(scores), len(self.model.transform(self.vals_test)))
 
     def test_alarm(self):

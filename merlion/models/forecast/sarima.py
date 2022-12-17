@@ -85,9 +85,7 @@ class Sarima(ForecasterExogBase, SeasonalityModel):
         if self.model is None:
             return 0
         orders = self.model.model_orders
-        if orders["reduced_ma"] > 0:
-            return 0
-        return 2 * orders["reduced_ar"] + 1
+        return 0 if orders["reduced_ma"] > 0 else 2 * orders["reduced_ar"] + 1
 
     def _train_with_exog(
         self, train_data: pd.DataFrame, train_config=None, exog_data: pd.DataFrame = None

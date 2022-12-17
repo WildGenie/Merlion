@@ -33,8 +33,7 @@ def update_select_file_dropdown(n_clicks, filename, features, label):
         prop_ids = {p["prop_id"].split(".")[0]: p["value"] for p in ctx.triggered}
         if "anomaly-select-file-parent" in prop_ids:
             files = file_manager.uploaded_files()
-            for f in files:
-                options.append({"label": f, "value": f})
+            options.extend({"label": f, "value": f} for f in files)
         if "anomaly-select-file" in prop_ids:
             features, label = None, None
     return options, features, label
@@ -47,8 +46,7 @@ def update_select_test_file_dropdown(n_clicks):
     prop_id = ctx.triggered_id
     if prop_id == "anomaly-select-test-file-parent":
         files = file_manager.uploaded_files()
-        for filename in files:
-            options.append({"label": filename, "value": filename})
+        options.extend({"label": filename, "value": filename} for filename in files)
     return options
 
 
@@ -288,8 +286,7 @@ def click_train_test(
         error = traceback.format_exc()
         modal_is_open = True
         modal_content = error
-        logger.error(error)
-
+        logger.modal_content(modal_content)
     return train_metric_table, test_metric_table, figure, modal_is_open, modal_content
 
 
@@ -299,7 +296,4 @@ def click_train_test(
     Input("anomaly-file-radio", "value"),
 )
 def set_file_mode(value):
-    if value == "single":
-        return True, False
-    else:
-        return False, True
+    return (True, False) if value == "single" else (False, True)

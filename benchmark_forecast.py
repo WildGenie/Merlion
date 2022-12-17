@@ -214,7 +214,7 @@ def get_combiner(ensemble_type: str) -> CombinerBase:
 def get_dirname(model_names: List[str], ensemble_type: str) -> str:
     dirname = "+".join(sorted(model_names))
     if len(model_names) > 1:
-        dirname += "_" + ensemble_type
+        dirname += f"_{ensemble_type}"
     return dirname
 
 
@@ -282,17 +282,22 @@ def train_model(
 
         # Get all the horizon conditions we want to evaluate from metadata
         if any("condition" in k and isinstance(v, list) for k, v in md.items()):
-            conditions = sum([v for k, v in md.items() if "condition" in k and isinstance(v, list)], [])
+            conditions = sum(
+                (
+                    v
+                    for k, v in md.items()
+                    if "condition" in k and isinstance(v, list)
+                ),
+                [],
+            )
             logger.debug("\n" + "=" * 80 + "\n" + df.columns[0] + "\n" + "=" * 80 + "\n")
             horizons = set()
             for condition in conditions:
                 horizons.update([v for k, v in condition.items() if "horizon" in k])
 
-        # For multivariate data, we use a horizon of 3
         elif is_multivariate_data:
             horizons = [3 * dt]
 
-        # For univariate data, we predict the entire test data in batch
         else:
             horizons = [test_window_len]
 
@@ -305,18 +310,18 @@ def train_model(
                 window = TimeSeries.from_pd(test_vals.to_pd()[: to_pd_datetime(train_end_timestamp + horizon)])
                 max_forecast_steps = len(TemporalResample(granularity=dt)(window))
             logger.debug(f"horizon is {pd.Timedelta(seconds=horizon)} and max_forecast_steps is {max_forecast_steps}")
-            if retrain_type == "without_retrain":
-                retrain_freq = None
+            if retrain_type == "expanding_window_retrain":
+                retrain_freq = math.ceil(test_window_len / int(n_retrain))
                 train_window = None
-                n_retrain = 0
+                horizon = min(retrain_freq, horizon)
             elif retrain_type == "sliding_window_retrain":
                 retrain_freq = math.ceil(test_window_len / int(n_retrain))
                 train_window = train_window_len
                 horizon = min(retrain_freq, horizon)
-            elif retrain_type == "expanding_window_retrain":
-                retrain_freq = math.ceil(test_window_len / int(n_retrain))
+            elif retrain_type == "without_retrain":
+                retrain_freq = None
                 train_window = None
-                horizon = min(retrain_freq, horizon)
+                n_retrain = 0
             else:
                 raise ValueError(
                     "the retrain_type should be without_retrain, sliding_window_retrain or expanding_window_retrain"
@@ -497,8 +502,8 @@ def main():
     name2df = OrderedDict()
     prefix = f"{MERLION_ROOT}/results/forecast/*/{dataset_name}"
     csvs = glob.glob(f"{prefix}.csv") + glob.glob(f"{prefix}_*.csv")
-    csvs = [c for c in csvs if not c.endswith(f"_summary.csv")]
-    if len(csvs) == 0:
+    csvs = [c for c in csvs if not c.endswith("_summary.csv")]
+    if not csvs:
         raise RuntimeError(
             f"Did not find any pre-computed results files "
             f"for dataset {dataset_name}. Please run this "
@@ -506,9 +511,9 @@ def main():
             f"before trying to summarize their results."
         )
     for csv in sorted(csvs):
-        basename = re.search(f"{dataset_name}.*\\.csv", csv).group(0)
+        basename = re.search(f"{dataset_name}.*\\.csv", csv)[0]
         model_name = os.path.basename(os.path.dirname(csv[: -len(basename)]))
-        suffix = re.search(f"(?<={dataset_name}).*(?=\\.csv)", basename).group(0)
+        suffix = re.search(f"(?<={dataset_name}).*(?=\\.csv)", basename)[0]
         try:
             name2df[model_name + suffix] = pd.read_csv(csv)
         except Exception as e:

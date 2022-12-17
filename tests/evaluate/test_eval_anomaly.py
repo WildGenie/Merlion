@@ -59,7 +59,7 @@ class TestEvaluateAnomaly(unittest.TestCase):
         # Determine the number of alarms raised
         n_alarms = np.sum(alarms.to_pd().values != 0)
         print()
-        logger.info("# of alarms = " + str(n_alarms))
+        logger.info(f"# of alarms = {str(n_alarms)}")
 
         # Evaluate anomaly detector's performance on test split
         f1 = evaluator.evaluate(ground_truth=self.test_labels, predict=alarms, metric=TSADMetric.F1)
@@ -72,7 +72,9 @@ class TestEvaluateAnomaly(unittest.TestCase):
     def test_ensemble_no_valid(self):
         print("-" * 80)
         logger.info("test_ensemble_no_valid\n" + "-" * 80 + "\n")
-        model = self.run_ensemble(valid_frac=0.0, expected_precision=9 / 57, expected_recall=9 / 9)
+        model = self.run_ensemble(
+            valid_frac=0.0, expected_precision=9 / 57, expected_recall=1
+        )
         self.assertSequenceEqual(model.combiner.models_used, [False, True, False])
 
         # Do a quick test of saving/loading
@@ -82,7 +84,9 @@ class TestEvaluateAnomaly(unittest.TestCase):
     def test_ensemble_with_valid(self):
         print("-" * 80)
         logger.info("test_ensemble_with_valid\n" + "-" * 80 + "\n")
-        model = self.run_ensemble(valid_frac=0.50, expected_precision=9 / 59, expected_recall=9 / 9)
+        model = self.run_ensemble(
+            valid_frac=0.50, expected_precision=9 / 59, expected_recall=1
+        )
         self.assertSequenceEqual(model.combiner.models_used, [False, True, False])
 
         # Do a quick test of saving/loading
@@ -119,7 +123,7 @@ class TestEvaluateAnomaly(unittest.TestCase):
         # Determine the number of alarms raised
         n_alarms = np.sum(alarms.to_pd().values != 0)
         print()
-        logger.info("# of alarms = " + str(n_alarms))
+        logger.info(f"# of alarms = {str(n_alarms)}")
 
         # Evaluate ensemble anomaly detector's performance on test split
         f1 = evaluator.evaluate(ground_truth=self.test_labels, predict=alarms, metric=TSADMetric.F1)

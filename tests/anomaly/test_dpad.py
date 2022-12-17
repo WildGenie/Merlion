@@ -65,8 +65,8 @@ class TestDPAD(unittest.TestCase):
         scores = self.model.get_anomaly_score(self.test_data)
         logger.info(f"\nScores look like:\n{scores[:5]}")
         scores = scores.to_pd().values.flatten()
-        logger.info("max score = " + str(max(scores)))
-        logger.info("min score = " + str(min(scores)) + "\n")
+        logger.info(f"max score = {str(max(scores))}")
+        logger.info(f"min score = {str(min(scores))}" + "\n")
 
         # Alarms
         alarms = self.model.get_anomaly_label(self.test_data)

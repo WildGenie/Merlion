@@ -33,7 +33,7 @@ class TestLSTM(unittest.TestCase):
 
         time_stamps = sequence.univariates[sequence.names[0]].time_stamps
         stride = auto_stride(time_stamps, resolution=12)
-        logger.info("stride = " + str(stride))
+        logger.info(f"stride = {str(stride)}")
 
         # 2 days of data for testing
         test_delta = datetime.timedelta(days=2).total_seconds()
@@ -77,7 +77,7 @@ class TestLSTM(unittest.TestCase):
         alarms = model.get_anomaly_label(ts_test)
         logger.info("Alarms look like:\n" + str(alarms[:5]))
         n_alarms = np.sum(alarms.to_pd().values != 0)
-        logger.info("# of alarms = " + str(n_alarms))
+        logger.info(f"# of alarms = {str(n_alarms)}")
         self.assertLess(n_alarms, 20)
 
         ##############

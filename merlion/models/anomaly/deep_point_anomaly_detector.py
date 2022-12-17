@@ -7,6 +7,7 @@
 """
 Deep Point Anomaly Detector algorithm.
 """
+
 import logging
 import math
 
@@ -22,7 +23,7 @@ except ImportError as e:
         "Try installing Merlion with optional dependencies using `pip install salesforce-merlion[deep-learning]` or "
         "`pip install `salesforce-merlion[all]`"
     )
-    raise ImportError(str(e) + ". " + err)
+    raise ImportError(f"{str(e)}. {err}")
 
 from merlion.models.anomaly.base import DetectorConfig, DetectorBase
 from merlion.post_process.threshold import AdaptiveAggregateAlarms
@@ -107,8 +108,6 @@ def get_dnn_loss_as_anomaly_score(tensor_x, tensor_y, use_cuda=True):
     model = MLPNet(dim_inp=1, dim_out=tensor_y.size(1), nhiddens=[400, 400, 400], bn=True)
     if use_cuda:
         model = model.cuda()
-    epoch = 0
-
     # optimizer = torch.optim.SGD(model.parameters(), lr=LR, momentum=0.9, weight_decay=0)
     optimizer = torch.optim.Adam(model.parameters(), lr=LR, weight_decay=1e-3)
 
@@ -116,9 +115,7 @@ def get_dnn_loss_as_anomaly_score(tensor_x, tensor_y, use_cuda=True):
     my_dataloader = data.DataLoader(my_dataset, batch_size=BS, shuffle=False, num_workers=0, pin_memory=True)
 
     # with tqdm.tqdm(total=max_epochs) as pbar:
-    while epoch < max_epochs:
-        # pbar.update(1)
-        epoch += 1
+    for _ in range(max_epochs):
         for x, y in my_dataloader:
             if use_cuda:
                 x, y = x.cuda(), y.cuda()

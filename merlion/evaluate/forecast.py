@@ -321,9 +321,7 @@ class ForecastEvaluatorConfig(EvaluatorConfig):
         """
         :return: the horizon our model is predicting into the future. Defaults to the retraining frequency.
         """
-        if self._horizon is None:
-            return self.retrain_freq
-        return self._horizon
+        return self.retrain_freq if self._horizon is None else self._horizon
 
     @horizon.setter
     def horizon(self, horizon):
@@ -335,9 +333,7 @@ class ForecastEvaluatorConfig(EvaluatorConfig):
         :return: the cadence at which we are having our model produce new predictions. Defaults to the predictive
             horizon if there is one, and the retraining frequency otherwise.
         """
-        if self._cadence is None:
-            return self.horizon
-        return self._cadence
+        return self.horizon if self._cadence is None else self._cadence
 
     @cadence.setter
     def cadence(self, cadence):
@@ -395,12 +391,13 @@ class ForecastEvaluator(EvaluatorBase):
             name = ground_truth.names[self.model.target_seq_index]
             ground_truth = ground_truth.univariates[name].to_ts()
         if isinstance(predict, TimeSeries):
-            if metric is not None:
-                return metric.value(ground_truth, predict)
-            return accumulate_forecast_score(ground_truth, predict)
-        else:
-            if metric is not None:
-                weights = np.asarray([len(p) for p in predict if not p.is_empty()])
-                vals = [metric.value(ground_truth, p) for p in predict if not p.is_empty()]
-                return np.dot(weights / weights.sum(), vals)
-            return [accumulate_forecast_score(ground_truth, p) for p in predict if not p.is_empty()]
+            return (
+                metric.value(ground_truth, predict)
+                if metric is not None
+                else accumulate_forecast_score(ground_truth, predict)
+            )
+        if metric is not None:
+            weights = np.asarray([len(p) for p in predict if not p.is_empty()])
+            vals = [metric.value(ground_truth, p) for p in predict if not p.is_empty()]
+            return np.dot(weights / weights.sum(), vals)
+        return [accumulate_forecast_score(ground_truth, p) for p in predict if not p.is_empty()]

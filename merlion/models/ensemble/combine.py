@@ -145,7 +145,7 @@ class CombinerBase(metaclass=AutodocABCMeta):
             all_model_outs = new_all_model_outs
 
         js = [j for j, out in enumerate(all_model_outs) if out is not None]
-        assert len(js) > 0, "`all_model_outs` cannot all be `None`"
+        assert js, "`all_model_outs` cannot all be `None`"
         j = js[0]
         assert all(out.dim == all_model_outs[j].dim for out in all_model_outs if out is not None)
         if self.n_models is None:
@@ -257,9 +257,7 @@ class ModelSelector(Mean):
     def invert(self):
         if isinstance(self.metric, ForecastMetric):
             return True
-        if self.metric is TSADMetric.MeanTimeToDetect:
-            return True
-        return False
+        return self.metric is TSADMetric.MeanTimeToDetect
 
     @property
     def requires_training(self):

@@ -64,7 +64,7 @@ def main():
                 with open(file) as f:
                     soup = bs(f, "html.parser")
                 version_dl = [dl for dl in soup.find_all("dl") if dl.find("dt", text="Versions")]
-                if len(version_dl) == 0:
+                if not version_dl:
                     continue
                 version_dl[0].replace_with(create_version_dl(soup, prefix, version, versions))
                 with open(file, "w", encoding="utf-8") as f:

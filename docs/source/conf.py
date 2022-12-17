@@ -77,7 +77,7 @@ if "current_version" in os.environ:
     try:
         html_context
     except NameError:
-        html_context = dict()
+        html_context = {}
     html_context["display_lower_left"] = True
 
     repo = Repo(search_parent_directories=True)

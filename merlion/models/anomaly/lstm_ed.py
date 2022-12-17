@@ -7,6 +7,7 @@
 """
 The LSTM-encoder-decoder-based anomaly detector for multivariate time series
 """
+
 from typing import Sequence
 
 import numpy as np
@@ -21,7 +22,7 @@ except ImportError as e:
         "Try installing Merlion with optional dependencies using `pip install salesforce-merlion[deep-learning]` or "
         "`pip install `salesforce-merlion[all]`"
     )
-    raise ImportError(str(e) + ". " + err)
+    raise ImportError(f"{str(e)}. {err}")
 
 from merlion.models.base import NormalizingConfig
 from merlion.models.anomaly.base import DetectorBase, DetectorConfig
@@ -148,7 +149,7 @@ class LSTMED(DetectorBase):
             batch_size=self.batch_size,
         )
         scores, outputs = [], []
-        for idx, (batch, _, _, _) in enumerate(data_loader):
+        for batch, _, _, _ in data_loader:
             batch = torch.tensor(batch, dtype=torch.float, device=self.device)
             output = self.lstmed(batch)
             error = nn.L1Loss(reduction="none")(output, batch)

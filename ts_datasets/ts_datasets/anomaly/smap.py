@@ -60,7 +60,7 @@ def preprocess(logger, data_folder, dataset):
     logger.info(f"Preprocessing {dataset}")
     with open(os.path.join(data_folder, "labeled_anomalies.csv"), "r") as f:
         csv_reader = csv.reader(f, delimiter=",")
-        res = [row for row in csv_reader][1:]
+        res = list(csv_reader)[1:]
     res = sorted(res, key=lambda k: k[0])
 
     labels = []

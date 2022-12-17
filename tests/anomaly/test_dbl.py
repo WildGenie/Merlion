@@ -50,8 +50,8 @@ class TestDynamicBaseline(unittest.TestCase):
         scores = self.model.get_anomaly_score(self.vals_test)
         logger.info(f"Scores look like:\n{scores[:5]}")
         scores = scores.to_pd().values.flatten()
-        logger.info("max score = " + str(max(scores)))
-        logger.info("min score = " + str(min(scores)) + "\n")
+        logger.info(f"max score = {str(max(scores))}")
+        logger.info(f"min score = {str(min(scores))}" + "\n")
         self.assertEqual(len(scores), len(self.model.transform(self.vals_test)))
 
     def test_alarm(self):
@@ -63,8 +63,8 @@ class TestDynamicBaseline(unittest.TestCase):
         logger.info(f"Alarms look like:\n{alarms[:5]}")
         logger.info(f"Number of alarms: {n_alarms}\n")
         scores = alarms.to_pd().values.flatten()
-        logger.info("max score = " + str(max(scores)))
-        logger.info("min score = " + str(min(scores)) + "\n")
+        logger.info(f"max score = {str(max(scores))}")
+        logger.info(f"min score = {str(min(scores))}" + "\n")
         self.assertLessEqual(n_alarms, 53)
 
     def test_save_load(self):

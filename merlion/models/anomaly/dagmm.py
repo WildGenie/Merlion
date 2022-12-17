@@ -7,6 +7,7 @@
 """
 Deep autoencoding Gaussian mixture model for anomaly detection (DAGMM)
 """
+
 import copy
 import random
 from typing import List
@@ -21,7 +22,7 @@ except ImportError as e:
         "Try installing Merlion with optional dependencies using `pip install salesforce-merlion[deep-learning]` or "
         "`pip install `salesforce-merlion[all]`"
     )
-    raise ImportError(str(e) + ". " + err)
+    raise ImportError(f"{str(e)}. {err}")
 
 import numpy as np
 import pandas as pd
@@ -109,17 +110,20 @@ class DAGMM(DetectorBase, MultipleTimeseriesDetectorMixin):
 
     @property
     def _default_train_config(self):
-        return dict()
+        return {}
 
     def _build_model(self, dim):
         hidden_size = self.hidden_size + int(dim / 20)
-        dagmm = DAGMMModule(
-            autoencoder=AEModule(n_features=dim, sequence_length=self.sequence_length, hidden_size=hidden_size),
+        return DAGMMModule(
+            autoencoder=AEModule(
+                n_features=dim,
+                sequence_length=self.sequence_length,
+                hidden_size=hidden_size,
+            ),
             n_gmm=self.gmm_k,
             latent_dim=hidden_size + 2,
             device=self.device,
         )
-        return dagmm
 
     def _step(self, input_data, max_grad_norm=5):
         enc, dec, z, gamma = self.dagmm(input_data)
@@ -235,17 +239,19 @@ class DAGMM(DetectorBase, MultipleTimeseriesDetectorMixin):
         for _ in range(n_epochs):
             if shuffle:
                 random.shuffle(multiple_train_data)
-            for train_data, anomaly_series in zip(multiple_train_data, anomaly_labels):
-                train_scores_list.append(
-                    self.train(
-                        train_data=train_data,
-                        train_config=train_config,
-                        anomaly_labels=anomaly_series,
-                        post_rule_train_config=post_rule_train_config
-                        # FIXME: the post-rule (calibrator and threshold) is trained individually on each time series
-                        # but ideally it needs to be re-trained on all of the `train_scores_list`
-                    )
+            train_scores_list.extend(
+                self.train(
+                    train_data=train_data,
+                    train_config=train_config,
+                    anomaly_labels=anomaly_series,
+                    post_rule_train_config=post_rule_train_config
+                    # FIXME: the post-rule (calibrator and threshold) is trained individually on each time series
+                    # but ideally it needs to be re-trained on all of the `train_scores_list`
                 )
+                for train_data, anomaly_series in zip(
+                    multiple_train_data, anomaly_labels
+                )
+            )
         return train_scores_list
 
 

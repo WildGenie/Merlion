@@ -129,7 +129,6 @@ class AutoSarima(SeasonalityLayer):
         start_Q = 1
         max_Q = 2
         relative_improve = 0
-        trend = None
         information_criterion = "aic"
 
         # auto-detect seasonality if desired, otherwise just get it from seasonal order
@@ -192,9 +191,7 @@ class AutoSarima(SeasonalityLayer):
                 max_p = min(max_p, m - 1)
             if max_Q > 0:
                 max_q = min(max_q, m - 1)
-        if (d + D) in (0, 1):
-            trend = "c"
-
+        trend = "c" if (d + D) in (0, 1) else None
         if n_samples < 10:
             start_p = min(start_p, 1)
             start_q = min(start_q, 1)
@@ -208,7 +205,7 @@ class AutoSarima(SeasonalityLayer):
 
         refititer = maxiter
 
-        return_dict = dict(
+        return dict(
             y=y,
             p=p,
             d=d,
@@ -227,7 +224,7 @@ class AutoSarima(SeasonalityLayer):
             max_Q=max_Q,
             trend=trend,
             method=method,
-            maxiter=maxiter,
+            refititer=refititer,
             information_criterion=information_criterion,
             relative_improve=relative_improve,
             approximation=approximation,
@@ -239,7 +236,6 @@ class AutoSarima(SeasonalityLayer):
             order=order,
             seasonal_order=seasonal_order,
         )
-        return return_dict
 
     def generate_theta(self, train_data: TimeSeries) -> Iterator:
         """
@@ -307,10 +303,7 @@ class AutoSarima(SeasonalityLayer):
         if theta_value["action"] == "stepwise":
             refititer = maxiter
             if approximation:
-                if approx_iter is None:
-                    maxiter = max(int(maxiter / 5), 1)
-                else:
-                    maxiter = approx_iter
+                maxiter = max(int(maxiter / 5), 1) if approx_iter is None else approx_iter
                 logger.info(f"Fitting models using approximations(approx_iter is {str(maxiter)}) to speed things up")
             train_config["maxiter"] = maxiter
 
@@ -319,28 +312,25 @@ class AutoSarima(SeasonalityLayer):
             filtered_models_ics = stepwise_search.stepwisesearch()
 
             if approximation:
-                logger.debug(f"Now re-fitting the best model(s) without approximations...")
-                if len(filtered_models_ics) > 0:
-                    best_model_theta = filtered_models_ics[0][1]
-                    best_model_fit = autosarima_utils._refit_sarima_model(
-                        filtered_models_ics[0][0],
-                        filtered_models_ics[0][2],
-                        method,
-                        maxiter,
-                        refititer,
-                        information_criterion,
-                    )
-                    logger.info(f"Best model: {autosarima_utils._model_name(best_model_fit.model)}")
-                else:
+                logger.debug("Now re-fitting the best model(s) without approximations...")
+                if len(filtered_models_ics) <= 0:
                     raise ValueError("Could not successfully fit a viable SARIMA model")
+                best_model_theta = filtered_models_ics[0][1]
+                best_model_fit = autosarima_utils._refit_sarima_model(
+                    filtered_models_ics[0][0],
+                    filtered_models_ics[0][2],
+                    method,
+                    maxiter,
+                    refititer,
+                    information_criterion,
+                )
             else:
-                if len(filtered_models_ics) > 0:
-                    best_model_fit = filtered_models_ics[0][0]
-                    best_model_theta = filtered_models_ics[0][1]
-                    logger.info(f"Best model: {autosarima_utils._model_name(best_model_fit.model)}")
-                else:
+                if len(filtered_models_ics) <= 0:
                     raise ValueError("Could not successfully fit a viable SARIMA model")
 
+                best_model_fit = filtered_models_ics[0][0]
+                best_model_theta = filtered_models_ics[0][1]
+            logger.info(f"Best model: {autosarima_utils._model_name(best_model_fit.model)}")
         elif theta_value["action"] == "pqPQ":
             best_model_theta = theta_value["theta"]
             order, seasonal_order, trend = theta_value["theta"]

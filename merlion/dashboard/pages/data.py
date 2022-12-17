@@ -16,17 +16,23 @@ def create_stats_table(data_stats=None):
     else:
         data = [{"Stats": key, "Value": value} for key, value in data_stats["@global"].items()]
 
-    table = dash_table.DataTable(
+    return dash_table.DataTable(
         id="data-stats",
         data=data,
-        columns=[{"id": "Stats", "name": "Stats"}, {"id": "Value", "name": "Value"}],
+        columns=[
+            {"id": "Stats", "name": "Stats"},
+            {"id": "Value", "name": "Value"},
+        ],
         editable=False,
-        style_header_conditional=[{"textAlign": "center", "font-family": "Salesforce Sans"}],
-        style_cell_conditional=[{"textAlign": "center", "font-family": "Salesforce Sans"}],
+        style_header_conditional=[
+            {"textAlign": "center", "font-family": "Salesforce Sans"}
+        ],
+        style_cell_conditional=[
+            {"textAlign": "center", "font-family": "Salesforce Sans"}
+        ],
         style_header=dict(backgroundColor=TABLE_HEADER_COLOR, color="white"),
         style_data=dict(backgroundColor=TABLE_DATA_COLOR),
     )
-    return table
 
 
 def create_metric_stats_table(metric_stats=None, column=None):
@@ -35,17 +41,23 @@ def create_metric_stats_table(metric_stats=None, column=None):
     else:
         data = [{"Stats": key, "Value": value} for key, value in metric_stats[column].items()]
 
-    table = dash_table.DataTable(
+    return dash_table.DataTable(
         id="metric-stats",
         data=data,
-        columns=[{"id": "Stats", "name": "Stats"}, {"id": "Value", "name": "Value"}],
+        columns=[
+            {"id": "Stats", "name": "Stats"},
+            {"id": "Value", "name": "Value"},
+        ],
         editable=False,
-        style_header_conditional=[{"textAlign": "center", "font-family": "Salesforce Sans"}],
-        style_cell_conditional=[{"textAlign": "center", "font-family": "Salesforce Sans"}],
+        style_header_conditional=[
+            {"textAlign": "center", "font-family": "Salesforce Sans"}
+        ],
+        style_cell_conditional=[
+            {"textAlign": "center", "font-family": "Salesforce Sans"}
+        ],
         style_header=dict(backgroundColor=TABLE_HEADER_COLOR, color="white"),
         style_data=dict(backgroundColor=TABLE_DATA_COLOR),
     )
-    return table
 
 
 def create_control_panel() -> html.Div:

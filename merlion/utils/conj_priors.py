@@ -116,26 +116,23 @@ class ConjPrior(ABC):
         if x is None:
             return None, None
 
-        # Initialize t0 if needed
-        if self.t0 is None:
-            if isinstance(x, TimeSeries):
+        if isinstance(x, TimeSeries):
+            if self.t0 is None:
                 t0, tf = x.t0, x.tf
                 self.t0 = t0
                 self.dt = tf - t0 if tf != t0 else None
-            elif isinstance(x, tuple) and len(x) == 2:
+        elif isinstance(x, tuple) and len(x) == 2:
+            if self.t0 is None:
                 self.t0 = x[0]
                 self.dt = None
-            else:
-                x = np.asarray(x)
-                self.t0 = 0
-                self.dt = 1 if x.ndim < 1 else max(1, len(x) - 1)
+        elif self.t0 is None:
+            x = np.asarray(x)
+            self.t0 = 0
+            self.dt = 1 if x.ndim < 1 else max(1, len(x) - 1)
 
         # Initialize dt if needed; this only happens for cases 1 and 2 above
         if self.dt is None:
-            if isinstance(x, TimeSeries):
-                tf = x.tf
-            else:
-                tf = x[0]
+            tf = x.tf if isinstance(x, TimeSeries) else x[0]
             if tf != self.t0:
                 self.dt = tf - self.t0
 
@@ -411,7 +408,7 @@ class MVNormInvWishart(ConjPrior):
     @property
     def n_params(self):
         d = 0 if self.mu_0 is None and self.Lambda is None else len(self.mu_0)
-        return 1 + d + d * d
+        return 1 + d + d**2
 
     def process_time_series(self, x):
         if x is None:

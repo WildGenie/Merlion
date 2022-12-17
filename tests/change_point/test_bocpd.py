@@ -51,7 +51,10 @@ class TestBOCPD(unittest.TestCase):
         n, d = 300, 5
         mus = [500, -90, 5, -50, 3]
         Sigmas_basis = [np.random.randn(d, d) + np.eye(d) for _ in mus]
-        vals = [np.ones((n, d)) * mu + np.random.randn(n, d) @ U for i, (mu, U) in enumerate(zip(mus, Sigmas_basis))]
+        vals = [
+            np.ones((n, d)) * mu + np.random.randn(n, d) @ U
+            for mu, U in zip(mus, Sigmas_basis)
+        ]
         vals = np.concatenate([np.ones((1, d)) * mus[0], *vals], axis=0)
         ts = TimeSeries.from_pd(vals, freq="1min")
         train, test = ts.bisect(ts.time_stamps[2 * n])

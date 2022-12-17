@@ -7,6 +7,7 @@
 """
 The VAE-based anomaly detector for multivariate time series
 """
+
 from typing import Sequence
 
 import numpy as np
@@ -21,7 +22,7 @@ except ImportError as e:
         "Try installing Merlion with optional dependencies using `pip install salesforce-merlion[deep-learning]` or "
         "`pip install `salesforce-merlion[all]`"
     )
-    raise ImportError(str(e) + ". " + err)
+    raise ImportError(f"{str(e)}. {err}")
 
 from merlion.models.base import NormalizingConfig
 from merlion.models.anomaly.base import DetectorBase, DetectorConfig
@@ -108,7 +109,7 @@ class VAE(DetectorBase):
         return False
 
     def _build_model(self, dim):
-        model = CVAE(
+        return CVAE(
             x_dim=dim * self.k,
             c_dim=0,
             encoder_hidden_sizes=self.encoder_hidden_sizes,
@@ -117,7 +118,6 @@ class VAE(DetectorBase):
             dropout_rate=self.dropout_rate,
             activation=self.activation,
         )
-        return model
 
     def _train(self, train_data: pd.DataFrame, train_config=None) -> pd.DataFrame:
         self.model = self._build_model(train_data.shape[1]).to(self.device)
@@ -139,7 +139,7 @@ class VAE(DetectorBase):
         self.model.train()
         for epoch in range(self.num_epochs):
             total_loss = 0
-            for i, (batch, _, _, _) in enumerate(loader):
+            for batch, _, _, _ in loader:
                 x = torch.tensor(batch, dtype=torch.float, device=self.device)
                 recon_x, mu, log_var, _ = self.model(x, None)
                 recon_loss = loss_func(x, recon_x)
@@ -302,7 +302,11 @@ def build_hidden_layers(input_size, hidden_sizes, dropout_rate, activation):
     hidden_layers = []
     for i in range(len(hidden_sizes)):
         s = input_size if i == 0 else hidden_sizes[i - 1]
-        hidden_layers.append(nn.Linear(s, hidden_sizes[i]))
-        hidden_layers.append(activation())
-        hidden_layers.append(nn.Dropout(dropout_rate))
+        hidden_layers.extend(
+            (
+                nn.Linear(s, hidden_sizes[i]),
+                activation(),
+                nn.Dropout(dropout_rate),
+            )
+        )
     return torch.nn.Sequential(*hidden_layers)

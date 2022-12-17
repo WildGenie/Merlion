@@ -76,7 +76,7 @@ class ForecastModel(ModelMixin, DataMixin):
         model = model_class(model_class.config_class(**params))
 
         # Handle exogenous regressors if they are supported by the model
-        if model.supports_exog and len(exog_columns) > 0:
+        if model.supports_exog and exog_columns:
             exog_ts = TimeSeries.from_pd(pd.concat((train_df.loc[:, exog_columns], test_df.loc[:, exog_columns])))
             train_df = train_df.loc[:, [target_column] + feature_columns]
             test_df = test_df.loc[:, [target_column] + feature_columns]

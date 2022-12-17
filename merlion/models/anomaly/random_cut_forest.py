@@ -88,9 +88,11 @@ class RandomCutForestConfig(DetectorConfig):
 
     @property
     def _default_threshold(self):
-        if not self.enable_calibrator:
-            return AggregateAlarms(alm_threshold=self.calibrator.max_score / 5)
-        return AggregateAlarms(alm_threshold=3.0)
+        return (
+            AggregateAlarms(alm_threshold=3.0)
+            if self.enable_calibrator
+            else AggregateAlarms(alm_threshold=self.calibrator.max_score / 5)
+        )
 
     @property
     def java_params(self):

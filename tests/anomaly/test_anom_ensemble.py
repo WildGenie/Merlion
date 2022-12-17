@@ -64,11 +64,11 @@ class TestMedianAnomEnsemble(unittest.TestCase):
         # generate alarms for the test sequence using the ensemble
         # this will return an aggregated alarms from all the models inside the ensemble
         scores = self.ensemble.get_anomaly_label(self.vals_test)
-        logger.info("scores look like " + str(scores[:3]))
+        logger.info(f"scores look like {str(scores[:3])}")
         scores = scores.to_pd().values.flatten()
 
         num_of_alerts = np.sum(scores != 0)
-        logger.info("# of alerts: " + str(num_of_alerts))
+        logger.info(f"# of alerts: {str(num_of_alerts)}")
         logger.info(f"max score  = {max(scores):.2f}")
         logger.info(f"min score  = {min(scores):.2f}")
         self.assertEqual(num_of_alerts, 6)
@@ -125,11 +125,11 @@ class TestMeanAnomEnsemble(unittest.TestCase):
         # generate alarms for the test sequence using the ensemble
         # this will return an aggregated alarms from all the models inside the ensemble
         scores = self.ensemble.get_anomaly_label(self.vals_test)
-        logger.info("scores look like " + str(scores[:3]))
+        logger.info(f"scores look like {str(scores[:3])}")
         scores = scores.to_pd().values.flatten()
 
         num_of_alerts = np.sum(scores != 0)
-        logger.info("# of alerts: " + str(num_of_alerts))
+        logger.info(f"# of alerts: {str(num_of_alerts)}")
         logger.info(f"max score  = {max(scores):.2f}")
         logger.info(f"min score  = {min(scores):.2f}")
         self.assertEqual(num_of_alerts, 7)

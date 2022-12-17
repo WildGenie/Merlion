@@ -117,7 +117,7 @@ class TestForecastEnsemble(unittest.TestCase):
         # this will return an aggregated alarms from all the models inside the ensemble
         yhat, _ = self.ensemble.forecast(self.vals_test.time_stamps)
         yhat = yhat.univariates[yhat.names[0]].np_values
-        logger.info("forecast looks like " + str(yhat[:3]))
+        logger.info(f"forecast looks like {str(yhat[:3])}")
         self.assertEqual(len(yhat), len(self.vals_test))
 
         logger.info("Testing save/load...")

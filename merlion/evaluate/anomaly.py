@@ -263,10 +263,7 @@ def accumulate_tsad_score(
             if any(window):
                 t_fp = ts_pred[np.where(window)[0] + j0]
                 num_fp += len(t_fp)
-                if tf != t0:
-                    delays = (t_fp - t0) / (tf - t0)
-                else:
-                    delays = np.infty * np.ones(len(t_fp))
+                delays = (t_fp - t0) / (tf - t0) if tf != t0 else np.infty * np.ones(len(t_fp))
                 fp_score += sum(scaled_sigmoid(delays))
             # do nothing for true negatives, except count them
             num_tn += sum(window == 0)
@@ -291,9 +288,7 @@ def accumulate_tsad_score(
         tp_anom_durations=tp_anom_durations,
         anom_durations=anom_durations,
     )
-    if metric is not None:
-        return metric(score_components)
-    return score_components
+    return metric(score_components) if metric is not None else score_components
 
 
 class TSADMetric(Enum):

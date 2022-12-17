@@ -52,7 +52,7 @@ class Synthetic(TSADBaseDataset):
             df["timestamp"] = pd.to_datetime(df["timestamp"], unit="s")
             df = df.set_index("timestamp")
 
-            ts = df[df.columns[0:1]]
+            ts = df[df.columns[:1]]
             metadata = pd.DataFrame(
                 {
                     "anomaly": df["anomaly"].astype(bool) if df.shape[1] > 1 else [False] * len(df),

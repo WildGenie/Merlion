@@ -132,9 +132,7 @@ class TemporalResample(TransformBase):
     def __call__(self, time_series: TimeSeries) -> TimeSeries:
         if self.granularity is None:
             logger.warning(
-                f"Skipping resampling step because granularity is "
-                f"None. Please either specify a granularity or train "
-                f"this transformation on a time series."
+                'Skipping resampling step because granularity is None. Please either specify a granularity or train this transformation on a time series.'
             )
             return time_series
 

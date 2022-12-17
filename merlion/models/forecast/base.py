@@ -174,10 +174,9 @@ class ForecasterBase(ModelBase):
         # Handle exogenous data
         if return_exog is None:
             return_exog = exog_data is not None
-        if not self.supports_exog:
-            if exog_data is not None:
-                exog_data = None
-                logger.warning(f"Exogenous regressors are not supported for model {type(self).__name__}")
+        if not self.supports_exog and exog_data is not None:
+            exog_data = None
+            logger.warning(f"Exogenous regressors are not supported for model {type(self).__name__}")
         if exog_data is not None:
             self.exog_dim = exog_data.dim
             self.config.exog_transform.train(exog_data)
@@ -328,8 +327,8 @@ class ForecasterBase(ModelBase):
 
         # Obtain negative & positive error bars which are appropriately padded
         if err is not None:
-            err = (err,) if not isinstance(err, tuple) else err
-            assert isinstance(err, tuple) and len(err) in (1, 2)
+            err = err if isinstance(err, tuple) else (err, )
+            assert isinstance(err, tuple) and len(err) in {1, 2}
             assert all(isinstance(e, (pd.DataFrame, TimeSeries)) for e in err)
             new_err = []
             for e in err:

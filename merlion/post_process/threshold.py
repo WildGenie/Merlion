@@ -39,7 +39,9 @@ class Threshold(PostRuleBase):
             time_series.dim == 1
         ), f"{type(self).__name__} post-rule can only be applied on single-variable time series"
         if self.alm_threshold is None:
-            raise RuntimeError(f"alm_threshold is None. Please train the post-rule before attempting to use it.")
+            raise RuntimeError(
+                "alm_threshold is None. Please train the post-rule before attempting to use it."
+            )
         k = time_series.names[0]
         times = time_series.univariates[k].index
         scores = time_series.univariates[k].np_values

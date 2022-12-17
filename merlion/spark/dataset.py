@@ -7,6 +7,7 @@
 """
 Utils for reading & writing pyspark datasets.
 """
+
 from typing import Dict, List, Tuple
 
 import numpy as np
@@ -21,7 +22,7 @@ except ImportError as e:
         "Try installing Merlion with optional dependencies using `pip install salesforce-merlion[spark]` or "
         "`pip install `salesforce-merlion[all]`"
     )
-    raise ImportError(str(e) + ". " + err)
+    raise ImportError(f"{str(e)}. {err}")
 
 TSID_COL_NAME = "__ts_id"
 """
@@ -61,7 +62,7 @@ def read_dataset(
     if time_col is None:
         time_col = [c for c in df.schema.fieldNames() if c not in index_cols + (data_cols or [])][0]
     # Use all non-index non-time columns as data columns data columns are not given
-    if data_cols is None or len(data_cols) == 0:
+    if data_cols is None or not data_cols:
         data_cols = [c for c in df.schema.fieldNames() if c not in index_cols + [time_col]]
     assert all(col in data_cols and col not in index_cols + [time_col] for col in data_cols)
 
@@ -138,8 +139,7 @@ def create_hier_dataset(
     full_df = df
     hier_vecs = []
 
-    # Compose the aggregation portions of the SQL select statements below
-    df.createOrReplaceTempView("df")
+    full_df.createOrReplaceTempView("df")
     agg_dict = {} if agg_dict is None else agg_dict
     data_col_sql = [f"{agg_dict.get(c, 'sum').upper()}(`{c}`) AS `{c}`" for c in data_cols]
 
@@ -162,7 +162,7 @@ def create_hier_dataset(
         # For lower levels of the hierarchy, we determine the membership of each grouping to create
         # the appropriate dummy entries and hierarchy vectors.
         dummy = []
-        for i, (group, group_idxs) in enumerate(ts_index.groupby(gb_cols).groups.items()):
+        for group, group_idxs in ts_index.groupby(gb_cols).groups.items():
             group = [group] if len(gb_cols) == 1 else list(group)
             locs = [ts_index.index.get_loc(j) for j in group_idxs]
             dummy.append(group + ["__aggregated__"] * (k + 1) + [n + len(hier_vecs)])
@@ -193,7 +193,7 @@ def add_tsid_column(
         return df
 
     # If no index columns are specified, we are only dealing with a single time series
-    if index_cols is None or len(index_cols) == 0:
+    if index_cols is None or not index_cols:
         return df.join(spark.createDataFrame(pd.DataFrame([0], columns=[TSID_COL_NAME])))
 
     # Compute time series IDs. Time series with any null indexes come last b/c these are aggregated time series.

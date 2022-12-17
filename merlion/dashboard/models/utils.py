@@ -30,9 +30,11 @@ class ModelMixin:
     def get_parameter_info(algorithm):
         model_class = ModelFactory.get_model_class(algorithm)
         param_info = ModelMixin._param_info(model_class.config_class.__init__)
-        if "max_forecast_steps" in param_info:
-            if param_info["max_forecast_steps"]["default"] == "":
-                param_info["max_forecast_steps"]["default"] = 100
+        if (
+            "max_forecast_steps" in param_info
+            and param_info["max_forecast_steps"]["default"] == ""
+        ):
+            param_info["max_forecast_steps"]["default"] = 100
         return param_info
 
     @staticmethod
@@ -80,7 +82,7 @@ class ModelMixin:
             elif value_type == bool:
                 assert value.lower() in ["true", "false"], f"The value of {name} should be either True or False."
                 kwargs[name] = value.lower() == "true"
-            elif info["type"] in [list, tuple, dict]:
+            elif value_type in [list, tuple, dict]:
                 value = value.replace(" ", "").replace("\t", "")
                 value = value.replace("(", "[").replace(")", "]").replace(",]", "]")
                 kwargs[name] = json.loads(value)

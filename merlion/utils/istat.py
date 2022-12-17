@@ -91,9 +91,7 @@ class Mean(IStat):
 
     @IStat.value.getter
     def value(self):
-        if self.sum is None:
-            return None
-        return self.sum / self.n
+        return None if self.sum is None else self.sum / self.n
 
     def add(self, x):
         assert isinstance(x, (int, float))
@@ -174,21 +172,15 @@ class Variance(IStat):
 
     @IStat.value.getter
     def value(self):
-        if self.corrected_value is None:
-            return None
-        return self.corrected_value + 1e-16
+        return None if self.corrected_value is None else self.corrected_value + 1e-16
 
     @property
     def sd(self):
-        if self.true_value is None:
-            return None
-        return sqrt(self.corrected_value) + 1e-16
+        return None if self.true_value is None else sqrt(self.corrected_value) + 1e-16
 
     @property
     def se(self):
-        if self.sd is None:
-            return None
-        return self.sd / sqrt(self.n)
+        return None if self.sd is None else self.sd / sqrt(self.n)
 
 
 class ExponentialMovingAverage(Mean):

@@ -67,9 +67,9 @@ class ModelConfigMeta(type):
 
                 # Parse the __init__ docstring. Use the earliest prefix/param docstring in the MRO.
                 prefix_, suffix_, params_ = parse_basic_docstring(cls_.__init__.__doc__)
-                if prefix is None and any([line != "" for line in prefix_]):
+                if prefix is None and any(line != "" for line in prefix_):
                     prefix = "\n".join(prefix_)
-                if suffix is None and any([line != "" for line in suffix_]):
+                if suffix is None and any(line != "" for line in suffix_):
                     suffix = "\n".join(suffix_)
                 for param, docstring_lines in params_.items():
                     if param not in params:
@@ -118,12 +118,16 @@ def parse_basic_docstring(docstring):
     docstring_lines = [""] if docstring is None else docstring.split("\n")
     prefix, suffix, param_dict = [], [], OrderedDict()
     non_empty_lines = [line for line in docstring_lines if len(line) > 0]
-    indent = 0 if len(non_empty_lines) == 0 else len(re.search(r"^\s*", non_empty_lines[0]).group(0))
+    indent = (
+        len(re.search(r"^\s*", non_empty_lines[0])[0])
+        if non_empty_lines
+        else 0
+    )
     for line in docstring_lines:
         line = line[indent:]
         match = re.search(r":param\s*(\w+):", line)
         if match is not None:
-            param = match.group(1)
+            param = match[1]
             param_dict[param] = [line]
         elif len(param_dict) == 0:
             prefix.append(line)
@@ -151,12 +155,10 @@ def dynamic_import(import_path: str, alias: dict = None):
     :param alias: dict which maps shortcuts for the registered classes, to their full import paths.
     :return: imported class
     """
-    alias = dict() if alias is None else alias
+    alias = {} if alias is None else alias
     if import_path not in alias and ":" not in import_path:
         raise ValueError(
-            "import_path should be one of {} or "
-            'include ":", e.g. "merlion.transform.normalize:MeanVarNormalize" : '
-            "got {}".format(set(alias), import_path)
+            f'import_path should be one of {set(alias)} or include ":", e.g. "merlion.transform.normalize:MeanVarNormalize" : got {import_path}'
         )
     if ":" not in import_path:
         import_path = alias[import_path]
@@ -172,7 +174,7 @@ def call_with_accepted_kwargs(fn: Callable, **kwargs):
     accepted by the function.
     """
     params = inspect.signature(fn).parameters
-    if not any(v.kind.name == "VAR_KEYWORD" for v in params.values()):
+    if all(v.kind.name != "VAR_KEYWORD" for v in params.values()):
         kwargs = {k: v for k, v in kwargs.items() if k in params}
     return fn(**kwargs)
 

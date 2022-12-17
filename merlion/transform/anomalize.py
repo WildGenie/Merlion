@@ -83,9 +83,10 @@ class Anomalize(TransformBase):
 
         # combine label univariates
         if prev_label_var is not None:
-            labels = []
-            for (t1, lab), (t2, prev_lab) in zip(prev_label_var, label_var):
-                labels.append(max(lab, prev_lab))
+            labels = [
+                max(lab, prev_lab)
+                for (t1, lab), (t2, prev_lab) in zip(prev_label_var, label_var)
+            ]
             label_var = UnivariateTimeSeries(label_var.time_stamps, labels, label_var.name)
 
         # bound result

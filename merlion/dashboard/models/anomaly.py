@@ -144,7 +144,7 @@ class AnomalyModel(ModelMixin, DataMixin):
         if threshold is not None:
             model.threshold = threshold
 
-        self.logger.info(f"Detecting anomalies...")
+        self.logger.info("Detecting anomalies...")
         set_progress(("2", "10"))
 
         test_ts, label_ts = TimeSeries.from_pd(df[columns]), None

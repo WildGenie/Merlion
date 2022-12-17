@@ -33,7 +33,7 @@ def _run_job(
         time_col=time_col,
         data_cols=data_cols,
     )
-    index_cols = index_cols + [TSID_COL_NAME]
+    index_cols += [TSID_COL_NAME]
 
     if hierarchical:
         df, hier_matrix = create_hier_dataset(

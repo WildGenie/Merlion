@@ -334,7 +334,7 @@ class MSES(ForecasterBase):
         xhat_hb = [self.xhat_h(h) for h in range(1, len(forecastable_data) + 1)]
         xtrue_h = forecastable_data.values
         losses_hb = np.array(xhat_hb, dtype=float) - np.expand_dims(xtrue_h, 1)
-        losses = dict()
+        losses = {}
         for i, j in np.ndindex(losses_hb.shape):
             # scale=i+j+1 because b=i and h=j+1
             scale = i + j + 1
@@ -560,7 +560,7 @@ class DeltaEstimator:
         :param stats: Dictionary mapping scales to DeltaStats objects to be used for delta
             estimation.
         """
-        self.stats = dict() if stats is None else stats
+        self.stats = {} if stats is None else stats
         self.recency_weight = recency_weight
         self.max_scale = max_scale
         self.accel_weight = accel_weight

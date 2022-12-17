@@ -78,8 +78,8 @@ class TestProphet(unittest.TestCase):
         # score function returns the raw anomaly scores
         scores = self.model.get_anomaly_score(self.vals_test).to_pd()
         logger.info(f"Scores look like:\n{scores[:5]}")
-        logger.info("max score = " + str(np.max(scores.values.flatten())))
-        logger.info("min score = " + str(np.min(scores.values.flatten())) + "\n")
+        logger.info(f"max score = {str(np.max(scores.values.flatten()))}")
+        logger.info(f"min score = {str(np.min(scores.values.flatten()))}" + "\n")
 
         # alarm function returns the post-rule processed anomaly scores
         alarms = self.model.get_anomaly_label(self.vals_test)

@@ -54,7 +54,7 @@ def forecast(
     """
     # If the time series has been aggregated, drop non-target columns which are not explicitly specified in agg_dict.
     if TSID_COL_NAME not in index_cols and TSID_COL_NAME in pdf.columns:
-        index_cols = index_cols + [TSID_COL_NAME]
+        index_cols += [TSID_COL_NAME]
     if (pdf.loc[:, index_cols] == "__aggregated__").any().any():
         data_cols = [c for c in pdf.columns if c not in index_cols + [time_col]]
         pdf = pdf.drop(columns=[c for c in data_cols if c != target_col and c not in agg_dict])
@@ -130,7 +130,7 @@ def anomaly(
     """
     # Sort the dataframe by time & turn it into a Merlion time series
     if TSID_COL_NAME not in index_cols and TSID_COL_NAME in pdf.columns:
-        index_cols = index_cols + [TSID_COL_NAME]
+        index_cols += [TSID_COL_NAME]
     pdf = pdf.sort_values(by=time_col)
     ts = TimeSeries.from_pd(pdf.drop(columns=index_cols).set_index(time_col))
 
@@ -243,5 +243,4 @@ def reconciliation(pdf: pd.DataFrame, hier_matrix: np.ndarray, target_col: str):
 
     # Replace original forecasts & errors with reconciled ones
     reconciled = pd.DataFrame(np.stack([rec, rec_errs], axis=1), index=pdf.index, columns=[target_col, errname])
-    df = pd.concat((pdf.drop(columns=[target_col, errname]), reconciled), axis=1)
-    return df
+    return pd.concat((pdf.drop(columns=[target_col, errname]), reconciled), axis=1)

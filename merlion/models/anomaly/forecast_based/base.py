@@ -56,13 +56,12 @@ class ForecastingDetectorBase(ForecasterBase, DetectorBase, metaclass=AutodocABC
         yhat = forecast.univariates[forecast.names[0]].np_values
         if stderr is None:
             return pd.DataFrame(y - yhat, index=times, columns=["anom_score"])
+        sigma = stderr.univariates[stderr.names[0]].np_values
+        if np.isnan(sigma).all():
+            sigma = 1
         else:
-            sigma = stderr.univariates[stderr.names[0]].np_values
-            if np.isnan(sigma).all():
-                sigma = 1
-            else:
-                sigma[np.isnan(sigma)] = np.mean(sigma)
-            return pd.DataFrame((y - yhat) / (sigma + 1e-8), index=times, columns=["anom_score"])
+            sigma[np.isnan(sigma)] = np.mean(sigma)
+        return pd.DataFrame((y - yhat) / (sigma + 1e-8), index=times, columns=["anom_score"])
 
     def train(
         self,
@@ -160,11 +159,11 @@ class ForecastingDetectorBase(ForecasterBase, DetectorBase, metaclass=AutodocABC
             ``time_series_prev`` is given.
         :return: a `Figure` of the model's anomaly score predictions and/or forecast.
         """
-        assert not (
-            time_series is None and time_stamps is None
+        assert (
+            time_series is not None or time_stamps is not None
         ), "Must provide at least one of time_series or time_stamps"
-        fig = None
         plot_forecast = plot_forecast or plot_forecast_uncertainty or not plot_anomaly
+        fig = None
         if plot_forecast or time_series is None:
             fig = ForecasterBase.get_figure(
                 self,

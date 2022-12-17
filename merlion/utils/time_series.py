@@ -231,10 +231,7 @@ class UnivariateTimeSeries(pd.Series):
         :return: the left and right splits of the time series.
         """
         t = to_pd_datetime(t)
-        if t_in_left:
-            i = bisect_right(self.index, t)
-        else:
-            i = bisect_left(self.index, t)
+        i = bisect_right(self.index, t) if t_in_left else bisect_left(self.index, t)
         return self[:i], self[i:]
 
     def window(self, t0: float, tf: float, include_tf: bool = False):
@@ -313,9 +310,8 @@ class UnivariateTimeSeries(pd.Series):
         """
         if self.name is None and name is None:
             return TimeSeries([self])
-        else:
-            name = name if self.name is None else self.name
-            return TimeSeries({name: self})
+        name = name if self.name is None else self.name
+        return TimeSeries({name: self})
 
     @classmethod
     def empty(cls, name=None):
@@ -624,9 +620,7 @@ class TimeSeries:
         """
         :return: `UnivariateTimeSeries` if the time series is univariate; otherwise returns itself, a `TimeSeries`
         """
-        if self.dim == 1:
-            return self.univariates[self.names[0]]
-        return self
+        return self.univariates[self.names[0]] if self.dim == 1 else self
 
     def __len__(self):
         """
@@ -681,12 +675,12 @@ class TimeSeries:
             )
             ret = TimeSeries(univariates, check_aligned=False)
             ret._is_aligned = self.is_aligned and other.is_aligned
-            return ret
         else:
             univariates = ValIterOrderedDict([(name, var.copy()) for name, var in [*self.items(), other.items()]])
             ret = TimeSeries(univariates, check_aligned=False)
             ret._is_aligned = self.is_aligned and other.is_aligned and self.time_stamps == other.time_stamps
-            return ret
+
+        return ret
 
     def __eq__(self, other):
         if self.dim != other.dim:
@@ -710,14 +704,13 @@ class TimeSeries:
         left, right = ValIterOrderedDict(), ValIterOrderedDict()
         for name, var in self.items():
             left[name], right[name] = var.bisect(t, t_in_left)
-        if self.is_aligned:
-            left = TimeSeries(left, check_aligned=False)
-            right = TimeSeries(right, check_aligned=False)
-            left._is_aligned = True
-            right._is_aligned = True
-            return left, right
-        else:
+        if not self.is_aligned:
             return TimeSeries(left), TimeSeries(right)
+        left = TimeSeries(left, check_aligned=False)
+        right = TimeSeries(right, check_aligned=False)
+        left._is_aligned = True
+        right._is_aligned = True
+        return left, right
 
     def window(self, t0: float, tf: float, include_tf: bool = False):
         """
@@ -959,7 +952,7 @@ class TimeSeries:
             if origin is None and isinstance(granularity, pd.Timedelta):
                 elapsed = df.index[-1] - df.index[0]
                 origin = df.index[0] + elapsed % granularity
-            direction = None if not fixed_granularity else "right"
+            direction = "right" if fixed_granularity else None
             new_df = df.resample(granularity, origin=to_pd_datetime(origin), label=direction, closed=direction)
 
             # Apply aggregation & missing value imputation policies
@@ -1022,4 +1015,6 @@ def assert_equal_timedeltas(time_series: UnivariateTimeSeries, granularity, offs
     expected = pd.date_range(start=index[0], end=index[-1], freq=granularity) + offset
     deviation = expected - time_series.index[-len(expected) :]
     max_deviation = np.abs(deviation.total_seconds().values).max()
-    assert max_deviation < 2e-3, f"Data must have the same time difference between each element of the time series"
+    assert (
+        max_deviation < 2e-3
+    ), "Data must have the same time difference between each element of the time series"

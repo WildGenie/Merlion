@@ -40,7 +40,7 @@ class _suppress_stdout_stderr(object):
 
     def __init__(self):
         # Open a pair of null files
-        self.null_fds = [os.open(os.devnull, os.O_RDWR) for x in range(2)]
+        self.null_fds = [os.open(os.devnull, os.O_RDWR) for _ in range(2)]
         # Save the actual stdout (1) and stderr (2) file descriptors.
         self.save_fds = [os.dup(1), os.dup(2)]
 
@@ -181,7 +181,7 @@ class Prophet(ForecasterExogBase, SeasonalityModel):
         return self.config.uncertainty_samples
 
     def set_seasonality(self, theta, train_data: UnivariateTimeSeries):
-        theta = [theta] if not isinstance(theta, Iterable) else theta
+        theta = theta if isinstance(theta, Iterable) else [theta]
         dt = train_data.index[1] - train_data.index[0]
         for p in theta:
             if p > 1:

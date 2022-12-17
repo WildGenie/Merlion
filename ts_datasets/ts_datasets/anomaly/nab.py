@@ -75,7 +75,7 @@ class NAB(TSADBaseDataset):
         with open(labelfile) as json_file:
             label_list = json.load(json_file)
 
-        csvs = sum([sorted(glob.glob(f"{d}/*.csv")) for d in dsetdirs], [])
+        csvs = sum((sorted(glob.glob(f"{d}/*.csv")) for d in dsetdirs), [])
         for i, csv in enumerate(sorted(csvs)):
             df = pd.read_csv(csv)
             df.iloc[:, 0] = pd.to_datetime(df.iloc[:, 0])
@@ -198,7 +198,7 @@ class NAB(TSADBaseDataset):
                         f.flush()
 
         csvs = [f for f in csvs if not os.path.isfile(os.path.join(rootdir, f)) and f.split("/")[0] in subsets]
-        for csv in tqdm.tqdm(csvs, desc="NAB Download", disable=len(csvs) == 0):
+        for csv in tqdm.tqdm(csvs, desc="NAB Download", disable=not csvs):
             path = os.path.join(rootdir, csv)
             if not os.path.isfile(path):
                 os.makedirs(os.path.dirname(path), exist_ok=True)

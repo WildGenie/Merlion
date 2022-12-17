@@ -49,7 +49,11 @@ class TestLGBMForecaster(unittest.TestCase):
         # Test the benefit of adding them, so don't include them in the endogenous data by default.
         exog_cols = [c for c in data.names if c != target][-3:]
         data_cols = [target] if univariate else [c for c in data.names if c not in exog_cols]
-        exog_data = None if not use_exog else TimeSeries([data.univariates[c] for c in exog_cols])
+        exog_data = (
+            TimeSeries([data.univariates[c] for c in exog_cols])
+            if use_exog
+            else None
+        )
         data = TimeSeries([data.univariates[c] for c in data_cols])
         train_data, test_data = data.bisect(t)
 

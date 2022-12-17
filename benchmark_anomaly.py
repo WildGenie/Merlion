@@ -190,7 +190,7 @@ def dataset_to_threshold(dataset: TSADBaseDataset, tune_on_test=False):
     elif isinstance(dataset, SMAP):
         return 3.5
     elif isinstance(dataset, SMD):
-        return 3 if not tune_on_test else 2.5
+        return 2.5 if tune_on_test else 3
     elif hasattr(dataset, "default_threshold"):
         return dataset.default_threshold
     return 3
@@ -253,10 +253,7 @@ def get_model(
 def df_to_merlion(df: pd.DataFrame, md: pd.DataFrame, get_ground_truth=False, transform=None) -> TimeSeries:
     """Converts a pandas dataframe time series to the Merlion format."""
     if get_ground_truth:
-        if False and "changepoint" in md.keys():
-            series = md["anomaly"] | md["changepoint"]
-        else:
-            series = md["anomaly"]
+        series = md["anomaly"] | md["changepoint"] if False else md["anomaly"]
     else:
         series = df
     time_series = TimeSeries.from_pd(series)
@@ -383,42 +380,42 @@ def train_model(
             logger.info(f"Mean Detected Anomaly Duration: {score_acc.mean_detected_anomaly_duration()}")
             logger.info(f"Mean Anomaly Duration:          {score_acc.mean_anomaly_duration()}\n")
 
-            if debug:
-                logger.info(f"Pointwise metrics")
-                logger.info(f"F1 Score:  {score_acc.f1(score_type=ScoreType.Pointwise):.4f}")
-                logger.info(f"Precision: {score_acc.precision(score_type=ScoreType.Pointwise):.4f}")
-                logger.info(f"Recall:    {score_acc.recall(score_type=ScoreType.Pointwise):.4f}\n")
+        if debug:
+            logger.info("Pointwise metrics")
+            logger.info(f"F1 Score:  {score_acc.f1(score_type=ScoreType.Pointwise):.4f}")
+            logger.info(f"Precision: {score_acc.precision(score_type=ScoreType.Pointwise):.4f}")
+            logger.info(f"Recall:    {score_acc.recall(score_type=ScoreType.Pointwise):.4f}\n")
 
-                logger.info("Point-Adjusted Metrics")
-                logger.info(f"F1 Score:  {score_acc.f1(score_type=ScoreType.PointAdjusted):.4f}")
-                logger.info(f"Precision: {score_acc.precision(score_type=ScoreType.PointAdjusted):.4f}")
-                logger.info(f"Recall:    {score_acc.recall(score_type=ScoreType.PointAdjusted):.4f}\n")
+            logger.info("Point-Adjusted Metrics")
+            logger.info(f"F1 Score:  {score_acc.f1(score_type=ScoreType.PointAdjusted):.4f}")
+            logger.info(f"Precision: {score_acc.precision(score_type=ScoreType.PointAdjusted):.4f}")
+            logger.info(f"Recall:    {score_acc.recall(score_type=ScoreType.PointAdjusted):.4f}\n")
 
-                logger.info(f"NAB Scores")
-                logger.info(f"NAB score (balanced): {score_acc.nab_score():.4f}")
-                logger.info(f"NAB score (low FP):   {score_acc.nab_score(fp_weight=0.22):.4f}")
-                logger.info(f"NAB score (low FN):   {score_acc.nab_score(fn_weight=2.0):.4f}\n")
+            logger.info("NAB Scores")
+            logger.info(f"NAB score (balanced): {score_acc.nab_score():.4f}")
+            logger.info(f"NAB score (low FP):   {score_acc.nab_score(fp_weight=0.22):.4f}")
+            logger.info(f"NAB score (low FN):   {score_acc.nab_score(fn_weight=2.0):.4f}\n")
 
-            if visualize:
-                # Make a plot
-                alarms = model.threshold(test_scores)
-                fig = model.get_figure(time_series=test_vals, time_series_prev=train_vals, plot_time_series_prev=True)
-                fig.anom = alarms.univariates[alarms.names[0]]
-                fig, ax = fig.plot(figsize=(1800, 600))
+        if visualize:
+            # Make a plot
+            alarms = model.threshold(test_scores)
+            fig = model.get_figure(time_series=test_vals, time_series_prev=train_vals, plot_time_series_prev=True)
+            fig.anom = alarms.univariates[alarms.names[0]]
+            fig, ax = fig.plot(figsize=(1800, 600))
 
-                # Overlay windows indicating the true anomalies
-                all_anom = train_anom + test_anom
-                t, y = zip(*all_anom)
-                y = np.asarray(y).flatten()
-                splits = np.where(y[1:] != y[:-1])[0] + 1
-                splits = np.concatenate(([0], splits, [len(y) - 1]))
-                anom_windows = [(splits[k], splits[k + 1]) for k in range(len(splits) - 1) if y[splits[k]]]
-                for i_0, i_f in anom_windows:
-                    t_0 = to_pd_datetime(t[i_0])
-                    t_f = to_pd_datetime(t[i_f])
-                    ax.axvspan(t_0, t_f, color="#d07070", zorder=-1, alpha=0.5)
-                time.sleep(2)
-                plt.show()
+            # Overlay windows indicating the true anomalies
+            all_anom = train_anom + test_anom
+            t, y = zip(*all_anom)
+            y = np.asarray(y).flatten()
+            splits = np.where(y[1:] != y[:-1])[0] + 1
+            splits = np.concatenate(([0], splits, [len(y) - 1]))
+            anom_windows = [(splits[k], splits[k + 1]) for k in range(len(splits) - 1) if y[splits[k]]]
+            for i_0, i_f in anom_windows:
+                t_0 = to_pd_datetime(t[i_0])
+                t_f = to_pd_datetime(t[i_f])
+                ax.axvspan(t_0, t_f, color="#d07070", zorder=-1, alpha=0.5)
+            time.sleep(2)
+            plt.show()
 
     # Save full experimental config
     if model is not None and not visualize:
@@ -516,7 +513,7 @@ def evaluate_predictions(
             if early is None:
                 leads = [getattr(m.threshold, "suppress_secs", delay) for m in models]
                 leads = [dt for dt in leads if dt is not None]
-                early = None if len(leads) == 0 else max(leads)
+                early = max(leads, default=None)
 
             # No further training if we only have 1 model
             if len(models) == 1:
@@ -659,8 +656,8 @@ def main():
     )
     dataset = get_dataset(args.dataset, rootdir=args.data_root, **args.data_kwargs)
     retrain_freq, train_window = args.retrain_freq, args.train_window
-    univariate = dataset[0][0].shape[1] == 1
     if retrain_freq == "default":
+        univariate = dataset[0][0].shape[1] == 1
         retrain_freq = "1d" if univariate else None
         desc = "univariate" if univariate else "multivariate"
         logger.warning(f"Setting retrain_freq = {retrain_freq} for {desc} dataset {type(dataset).__name__}")
